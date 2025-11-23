@@ -58,7 +58,6 @@ class Jogo:
     def colidirbolacomobjetos(self, bola, raquete):
         if pygame.sprite.collide_mask(bola, raquete):
             centro = raquete.rect.x + (raquete.width / 2)
-            # TODO: quanto mais longe estiver a bola mais velocidade dar para ela
             bola.velocidade[0] = (bola.rect.x - centro) / 10
                 
             bola.velocidade[1] = -bola.velocidade[1]
