@@ -38,6 +38,7 @@ class gameState():
     telhamax = 0
     quantmin = 0
     quantmax = 0
+    quantidadedeItems = 0
 
 class Cores():
     WHITE = (255,255,255)

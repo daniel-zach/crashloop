@@ -97,6 +97,7 @@ class Jogo:
             player.mover(-7)
         if tecla[pygame.K_RIGHT]:
             player.mover(7)
+        # para debug
         if tecla[pygame.K_1]:
             gameState.numTelhas = 0
 
