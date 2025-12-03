@@ -1,7 +1,8 @@
 import pygame
-from objetos import Raquete, Bola, Telha, ObjetosDefault
+from objetos import Telha, Item, ObjetosDefault
 from random import randint
 from util import renderSprites, Cores, gameState
+import itens
 
 class Jogo:
     def __init__(self):
@@ -11,6 +12,7 @@ class Jogo:
         self.clock = pygame.time.Clock()
         self.telhas = pygame.sprite.Group()
         self.fonte = pygame.font.Font(None, 64)
+        gameState.gamestate = 1
 
     def main(self, raquete, bola, nivel):
         # salvar para o gamestate
@@ -23,12 +25,13 @@ class Jogo:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-            self.moverraquete(raquete)
-            self.colidirbolacomparedes(bola)
-            bola.bounce(raquete)
-            bola.colidirbolacomobjetos(bola, raquete, 1, 1)
-            self.colidirbolacomtelha(bola)
-            self.concluirnivel()
+            if gameState.gamestate == 1:
+                self.moverraquete(raquete)
+                self.colidirbolacomparedes(bola)
+                bola.bounce(raquete)
+                bola.colidirbolacomobjetos(bola, raquete, 1, 1)
+                self.colidirbolacomtelha(bola)
+                self.concluirnivel()
 
             renderSprites.listaSprites.update()
             self.screen.fill(Cores.BLACK)
@@ -47,20 +50,29 @@ class Jogo:
         bola.rect.y = 500
         for i in range(randint(telhamin,telhamax)):
             self.criartelhas(quantmin, quantmax, (60 + i * 60))
+        # salvar dados para o gamestate
+        gameState.ultimonivel = nivel
+        gameState.telhamin = telhamin
+        gameState.telhamax = telhamax
+        gameState.quantmin = quantmin
+        gameState.quantmax = quantmax
         self.running = True
         self.main(raquete, bola, nivel)
 
     def proximonivel(self, raquete, bola, nivel):
         # define as propriedades da fase dependendo do nivel
-        if nivel <= 5:
-            telhamax = 2 + nivel
-            telhamin = nivel
+        if gameState.nivel != gameState.ultimonivel:
+            if nivel <= 5:
+                telhamax = 2 + nivel
+                telhamin = nivel
+            else:
+                telhamax = 7
+                telhamin = (3 * nivel)%7
+            quantmax = 8
+            quantmin = 2 + nivel%6
+            self.iniciarfase(raquete, bola, telhamin, telhamax, quantmin, quantmax, nivel)
         else:
-            telhamax = 7
-            telhamin = (3 * nivel)%7
-        quantmax = 8
-        quantmin = 2 + nivel%6
-        self.iniciarfase(raquete, bola, telhamin, telhamax, quantmin, quantmax, nivel)
+            self.iniciarfase(raquete, bola, gameState.telhamin, gameState.telhamax, gameState.quantmin, gameState.quantmax, nivel)
 
     def resetjogo(self, bola):
         for telha in self.telhas:
@@ -85,6 +97,8 @@ class Jogo:
             player.mover(-7)
         if tecla[pygame.K_RIGHT]:
             player.mover(7)
+        if tecla[pygame.K_1]:
+            gameState.numTelhas = 0
 
     def colidirbolacomparedes(self, bola):
         if bola.rect.x >= (int(self.screen.get_width()) - 15):
@@ -101,8 +115,20 @@ class Jogo:
     def concluirnivel(self):
         if gameState.numTelhas <= 0:
             self.resetjogo(gameState.bola)
+            gameState.ultimonivel = gameState.nivel
             gameState.nivel += 1
-            self.proximonivel(gameState.raquete, gameState.bola, gameState.nivel)
+            self.resetjogo(gameState.bola)
+            self.escolheritems()
+
+    def escolheritems(self):
+        for x in range(3):
+            rand = randint(1,1)
+            match rand:
+                case 1:
+                    item = itens.itemlegal()
+                    item.rect.x = 200 * x
+                    item.rect.y = 400
+        self.proximonivel(gameState.raquete, gameState.bola, gameState.nivel)
 
     def colidirbolacomtelha(self, bola):
         listacolisao = pygame.sprite.spritecollide(bola, self.telhas, False)
@@ -112,4 +138,4 @@ class Jogo:
 
 if __name__ == "__main__":
     jogo = Jogo()
-    jogo.proximonivel(ObjetosDefault.raquete, ObjetosDefault.bola, 1)
+    jogo.iniciarfase(ObjetosDefault.raquete, ObjetosDefault.bola, 1, 3, 2, 8, 1)

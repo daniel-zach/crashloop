@@ -27,9 +27,17 @@ class renderSprites():
 class gameState():
     numTelhas = 0
     # maioria disso é salvo no main para ser utilizado em multiplas funções.
+    gamestate = 0
     nivel = 0
+    ultimonivel = 0
     raquete = ()
     bola = ()
+    listaitems = [0,0,0,0,0]
+    listacaixa = []
+    telhamin = 0
+    telhamax = 0
+    quantmin = 0
+    quantmax = 0
 
 class Cores():
     WHITE = (255,255,255)

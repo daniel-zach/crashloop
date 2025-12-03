@@ -68,6 +68,19 @@ class Bola(pygame.sprite.Sprite):
                         bola.velocidade[0] = -bola.velocidade[0]
                     else:
                         bola.velocidade[1] = -bola.velocidade[1]
+
+    #def upgrade(self):
+    #    rand = randint(0,2)
+    #    match rand:
+    #        case 0:
+    #            print("Sem Upgrade")
+    #            return
+    #        case 1:
+    #            self.dano += randint(1, int(gameState.nivel / 2))
+    #            print("Upgrade Dano")
+    #        case 2:
+    #            self.maxvelocidade += randint(1, 2)
+    #            print("Update Velocidade")
                     
 
 class Telha(pygame.sprite.Sprite):
@@ -79,16 +92,94 @@ class Telha(pygame.sprite.Sprite):
         if gameState.nivel == 1:
             self.vida = 1
         else:
-            self.vida = randint(gameState.nivel, gameState.nivel * 2)
+            self.vida = randint(gameState.nivel, int(gameState.nivel * 1.5))
 
         renderSprites.listaSprites.add(self)
 
     def tomardano(self, dano):
         self.vida -= dano
+        print(dano)
         if self.vida <= 0:
             gameState.numTelhas -= 1
             self.kill()
 
+class Item(pygame.sprite.Sprite):
+    def __init__(self, width, height, nome):
+        super().__init__()
+        self.image, self.rect = renderSprites.carregarimagens(str(nome + ".png"), width, height, -1)
+        self.nome = nome
+        self.width = width
+        self.height = height
+        self.estado = 0
+        self.triggers = 0
+        self.location = 0
+        renderSprites.listaSprites.add(self)
+
+    def moveritem(self):
+        mousepos = pygame.mouse.get_pos()
+        if self.estado == 1 or self.estado == 0:
+            if pygame.mouse.get_pressed()[0] and self.rect.collidepoint(mousepos):
+                self.rect.x = (mousepos[0] - (self.width / 2))
+                self.rect.y = (mousepos[1] - (self.height / 2))
+                self.estado = 1
+            else:
+                self.estado = 0
+
+    def detectarcaixa(self):
+            for x in gameState.listacaixa:
+                if pygame.sprite.collide_mask(self, x):
+                    if self.estado == 0 and gameState.listaitems[x.location] == 0:
+                        gameState.listaitems[x.location] = self
+                        self.location = x.location
+                        self.slotcaixa(x)
+                        gameState.listaitems[x.location].item()
+
+
+    def slotcaixa(self, caixa):
+        self.estado = 2
+        self.rect.x = caixa.rect.x + (caixa.width / 6)
+        self.rect.y = caixa.rect.y + (caixa.height / 6)
+
+    def deletarself(self):
+        if self.estado == 2:
+            mousepos = pygame.mouse.get_pos()
+            if pygame.mouse.get_pressed()[2] and self.rect.collidepoint(mousepos):
+                gameState.listaitems[self.location] = 0
+                self.desfazerefeito()
+                self.kill()
+
+    def item(self):
+        # essa função é utilizado no itens.py para definir a função de cada item.
+        # roda a cada frame.
+        pass
+
+    def desfazerefeito(self):
+        # essa função é utilizada para desfazer os efeitos da função de item.
+        # roda quando é destruido o item.
+        pass
+
+    def update(self):
+        self.moveritem()
+        self.detectarcaixa()
+        self.deletarself()
+    
+class Caixas(pygame.sprite.Sprite):
+    def __init__(self, width, height, x):
+        super().__init__()
+        self.image, self.rect = renderSprites.carregarimagens("caixaitem.png", width, height, -1)
+        self.width = width
+        self.height = height
+        self.rect.y = 600
+        self.rect.x = 130 + x * (self.width + 50)
+        self.location = x
+        renderSprites.listaSprites.add(self)
+        gameState.listacaixa.append(self)
+        
 class ObjetosDefault():
     bola = Bola(10, 10, 6, 1)
     raquete = Raquete(100, 10)
+    caixa1 = Caixas(100, 100, 0)
+    caixa2 = Caixas(100, 100, 1)
+    caixa3 = Caixas(100, 100, 2)
+    caixa4 = Caixas(100, 100, 3)
+    caixa5 = Caixas(100, 100, 4)
