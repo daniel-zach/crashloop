@@ -29,12 +29,10 @@
 
 ## Estado Atual do Projeto  
 
-Versão inicial com as mecânicas básicas em desenvolvimento. Features planejadas:  
-- Tipos de blocos e bolas especiais.  
+Versão inicial com as mecânicas básicas: 
+- Vida dos blocos.  
 - Sistema de power-ups/upgrade.  
-- Loop de meta-progressão desbloqueável.  
-- Modos de dificuldade incremental com modificadores.  
-- Balanceamento, feedback visual/sonoro.
+- Loop de meta-progressão. 
 
 ---
 <br>Universidade Federal Rural de Pernambuco 

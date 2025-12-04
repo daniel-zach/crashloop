@@ -4,7 +4,6 @@ path = os.path.split(os.path.abspath(__file__))[0]
 assets = os.path.join(path, "assets")
 
 class renderSprites():
-    # eu não gosto do pygame. se tirar isso renderizar os sprites não funciona.
     pygame.init()
     pygame.display.set_mode((960,720))
     listaSprites = pygame.sprite.Group()
@@ -32,13 +31,14 @@ class gameState():
     ultimonivel = 0
     raquete = ()
     bola = ()
-    listaitems = [0,0,0,0,0]
+    listaitems = [0,0,0]
     listacaixa = []
     telhamin = 0
     telhamax = 0
     quantmin = 0
     quantmax = 0
     quantidadedeItems = 0
+    pontos = 0
 
 class Cores():
     WHITE = (255,255,255)
