@@ -3,6 +3,15 @@
 ## Visão Geral  
 “Crashloop” é uma reinvenção do clássico “breakout” com um toque roguelike: você controla uma plataforma e rebate uma bola para quebrar blocos, mas a cada fase a estrutura muda, os poderes evoluem e o risco cresce.
 
+## Dependências
+### Pygame
+
+    python3 -m pip install pygame
+
+### Numpy
+
+    python3 -m pip install numpy
+
 ## Mecânica Básica  
 - Rebata a bola para destruir blocos e avançar fases.  
 - A cada nova rodada, a disposição dos blocos, os efeitos e os desafios mudam.  
@@ -34,6 +43,12 @@ Versão inicial com as mecânicas básicas:
 - Sistema de power-ups/upgrade.  
 - Loop de meta-progressão. 
 
+## Prints do Jogo
+### Tela de Titulo
+![Tela de Titulo do Crashloop](https://file.garden/aTHbGAX8eEY4Irux/Crashloop/screencap0.png)
+### Jogo
+![O primeiro nível de uma rodada de Crashloop.](https://file.garden/aTHbGAX8eEY4Irux/Crashloop/screencap1.png)
+![Um nível mais avançado de uma rodada de Crashloop](https://file.garden/aTHbGAX8eEY4Irux/Crashloop/screencap2.png)
 ---
 <br>Universidade Federal Rural de Pernambuco 
 <br>Bacharelado em Sistemas de Informação
