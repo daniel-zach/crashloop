@@ -63,8 +63,9 @@ class Bola(pygame.sprite.Sprite):
                     bola.velocidade[0] = (bola.rect.x - centro) / (10 / intensidade)
                     bola.velocidade[1] = -bola.velocidade[1]
                 case 2:
-                    ladodireito = obj.rect.x + obj.width
-                    if bola.rect.x < obj.rect.x or bola.rect.x > (ladodireito - 5):
+                    # colisão baseada no centro relativo
+                    centro_bola = bola.rect.centerx
+                    if centro_bola < obj.rect.left or centro_bola > obj.rect.right:
                         bola.velocidade[0] = -bola.velocidade[0]
                     else:
                         bola.velocidade[1] = -bola.velocidade[1]
@@ -89,19 +90,36 @@ class Telha(pygame.sprite.Sprite):
         self.image, self.rect = renderSprites.carregarimagens("telha.png", width, height, -1)
         self.width = width
         self.height = height
+        self.font = pygame.font.Font(None, 28)
         if gameState.nivel == 1:
             self.vida = 1
         else:
-            self.vida = randint(gameState.nivel, int(gameState.nivel * 1.5))
+            self.vida = randint(gameState.nivel, int(gameState.nivel * 1.25))
 
         renderSprites.listaSprites.add(self)
 
+    def update(self):
+        # recriar imagem original para não acumular textos antigos
+        self.image, _ = renderSprites.carregarimagens("telha.png", self.width, self.height, -1)
+
+        # texto da vida
+        texto = self.font.render(str(self.vida), True, Cores.BLACK)
+
+        # centralizar
+        x = (self.width - texto.get_width()) // 2
+        y = (self.height - texto.get_height()) // 2
+
+        self.image.blit(texto, (x, y))
+
+
     def tomardano(self, dano):
+        gameState.pontos += min(dano, self.vida)   # +1 ponto por dano causado
         self.vida -= dano
         print(dano)
         if self.vida <= 0:
             gameState.numTelhas -= 1
             self.kill()
+
 
 class Item(pygame.sprite.Sprite):
     def __init__(self, width, height, nome):
@@ -113,6 +131,7 @@ class Item(pygame.sprite.Sprite):
         self.estado = 0
         self.triggers = 0
         self.location = 0
+        self.stack = 0
         renderSprites.listaSprites.add(self)
 
     def moveritem(self):
@@ -126,14 +145,37 @@ class Item(pygame.sprite.Sprite):
                 self.estado = 0
 
     def detectarcaixa(self):
-            for x in gameState.listacaixa:
-                if pygame.sprite.collide_mask(self, x):
-                    if self.estado == 0 and gameState.listaitems[x.location] == 0:
-                        gameState.listaitems[x.location] = self
-                        self.location = x.location
-                        self.slotcaixa(x)
-                        gameState.listaitems[x.location].item()
+        # só tenta encaixar se não estiver sendo arrastado (estado 0)
+        if self.estado != 0:
+            return
 
+        for x in gameState.listacaixa:
+            if pygame.sprite.collide_mask(self, x):
+                slot_item = gameState.listaitems[x.location]
+
+                # slot vazio → ocupa normalmente
+                if slot_item == 0:
+                    gameState.listaitems[x.location] = self
+                    self.location = x.location
+                    self.slotcaixa(x)
+                    self.stack = 1
+                    # aplica 1 vez o efeito (subclasses devem implementar aplicar_efeito)
+                    # e sinaliza que já foi ativado
+                    if hasattr(self, "aplicar_efeito"):
+                        self.aplicar_efeito()
+                    self.triggers = 1
+                    return
+
+                # slot com item do mesmo tipo → empilha
+                if isinstance(slot_item, self.__class__):
+                    # adiciona 1 ao stack do item que já está no slot
+                    slot_item.stack += 1
+                    # aplica mais 1 unidade de efeito ao item já no slot
+                    if hasattr(slot_item, "aplicar_efeito"):
+                        slot_item.aplicar_efeito()
+                    # destrói o item "solto" que foi colocado (não precisa ficar no mundo)
+                    self.kill()
+                    return
 
     def slotcaixa(self, caixa):
         self.estado = 2
@@ -144,6 +186,13 @@ class Item(pygame.sprite.Sprite):
         if self.estado == 2:
             mousepos = pygame.mouse.get_pos()
             if pygame.mouse.get_pressed()[2] and self.rect.collidepoint(mousepos):
+                if self.stack > 1:
+                    # reduz 1 efeito e mantem item
+                    self.stack -= 1
+                    self.desfazerefeito()
+                    return
+
+                # se stack chegar a 0, remove item do slot e deleta
                 gameState.listaitems[self.location] = 0
                 self.desfazerefeito()
                 self.kill()
@@ -162,6 +211,22 @@ class Item(pygame.sprite.Sprite):
         self.moveritem()
         self.detectarcaixa()
         self.deletarself()
+
+        # desenhar texto no canto inferior direito
+        if not hasattr(self, "font"):
+            self.font = pygame.font.Font(None, 24)
+
+        valor = self.stack if self.estado == 2 else 0
+        texto = self.font.render(str(valor), True, Cores.WHITE)
+
+        x = self.width - texto.get_width() - 4
+        y = self.height - texto.get_height() - 4
+
+        # recriar imagem base para não sobrepor texto antigo
+        self.image, _ = renderSprites.carregarimagens(str(self.nome + ".png"), self.width, self.height, -1)
+
+        self.image.blit(texto, (x, y))
+
     
 class Caixas(pygame.sprite.Sprite):
     def __init__(self, width, height, x):
@@ -170,7 +235,7 @@ class Caixas(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.rect.y = 600
-        self.rect.x = 130 + x * (self.width + 50)
+        self.rect.x = 280 + x * (self.width + 50)
         self.location = x
         renderSprites.listaSprites.add(self)
         gameState.listacaixa.append(self)
@@ -181,5 +246,3 @@ class ObjetosDefault():
     caixa1 = Caixas(100, 100, 0)
     caixa2 = Caixas(100, 100, 1)
     caixa3 = Caixas(100, 100, 2)
-    caixa4 = Caixas(100, 100, 3)
-    caixa5 = Caixas(100, 100, 4)
