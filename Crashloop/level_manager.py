@@ -4,7 +4,7 @@ Gerenciamento de níveis e fases do jogo.
 from random import randint
 from game_objects import Telha
 from game_state import game_state
-from constants import SCREEN_WIDTH
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class LevelManager:
@@ -52,9 +52,9 @@ class LevelManager:
         
         # Posicionar raquete e bola
         raquete.rect.x = SCREEN_WIDTH // 2 - raquete.width // 2
-        raquete.rect.y = 550
+        raquete.rect.y = SCREEN_HEIGHT - 250
         bola.rect.x = SCREEN_WIDTH // 2 - bola.width // 2
-        bola.rect.y = 500
+        bola.rect.y = SCREEN_HEIGHT - 300
         
         # Criar telhas
         self.telhas.clear()

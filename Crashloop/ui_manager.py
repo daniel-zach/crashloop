@@ -23,28 +23,29 @@ class UIManager:
     def tela_inicio(self):
         """Exibe a tela inicial do jogo"""
         self.screen.fill(Colors.BLACK)
-        self.desenhar_texto("CRASHLOOP", 200, self.font_title)
-        self.desenhar_texto("Pressione ENTER para começar", 350, self.font_text)
+        self.desenhar_texto("CRASHLOOP", 300, self.font_title)
+        self.desenhar_texto("Pressione ENTER para começar", 450, self.font_text)
         
         # Controles
-        self.desenhar_texto("Setas: mover", 480, self.font_small)
-        self.desenhar_texto("Mouse: arrastar itens", 520, self.font_small)
-        self.desenhar_texto("Botão direito: deletar item", 560, self.font_small)
+        self.desenhar_texto("Setas: mover", 580, self.font_small)
+        self.desenhar_texto("Espaço: lançar bola", 610, self.font_small)
+        self.desenhar_texto("Mouse: arrastar itens", 640, self.font_small)
+        self.desenhar_texto("Botão direito: deletar item", 670, self.font_small)
         
         pygame.display.flip()
 
     def tela_vitoria(self):
         """Exibe a tela de vitória de fase"""
         self.screen.fill(Colors.BLACK)
-        self.desenhar_texto("Fase concluída!", 250, self.font_title)
-        self.desenhar_texto("Pressione ENTER para continuar", 400, self.font_text)
+        self.desenhar_texto("Fase concluída!", 350, self.font_title)
+        self.desenhar_texto("Pressione ENTER para continuar", 500, self.font_text)
         pygame.display.flip()
 
     def tela_derrota(self):
         """Exibe a tela de derrota"""
         self.screen.fill(Colors.BLACK)
-        self.desenhar_texto("Você perdeu!", 250, self.font_title)
-        self.desenhar_texto("Pressione ENTER para tentar novamente", 400, self.font_text)
+        self.desenhar_texto("Você perdeu!", 350, self.font_title)
+        self.desenhar_texto("Pressione ENTER para tentar novamente", 500, self.font_text)
         pygame.display.flip()
 
     def esperar_tecla(self):
@@ -59,15 +60,36 @@ class UIManager:
             if tecla[pygame.K_RETURN]:
                 return
 
-    def desenhar_hud(self, nivel, pontos):
+    def desenhar_hud(self, nivel, pontos, combo=0):
         """Desenha o HUD do jogo"""
         fonte = pygame.font.Font(None, 64)
+        fonte_combo = pygame.font.Font(None, 32)
         
         # Texto do nível (canto inferior esquerdo)
         nivel_surface = fonte.render(f"Nível: {nivel}", True, Colors.WHITE)
-        self.screen.blit(nivel_surface, (10, 650))
+        nivel_y = self.screen.get_height() - 65
+        self.screen.blit(nivel_surface, (10, nivel_y))
         
         # Texto dos pontos (canto inferior direito)
         pontos_surface = fonte.render(f"{pontos}", True, Colors.WHITE)
         pontos_x = self.screen.get_width() - pontos_surface.get_width() - 10
-        self.screen.blit(pontos_surface, (pontos_x, 650))
+        pontos_y = self.screen.get_height() - 65
+        self.screen.blit(pontos_surface, (pontos_x, pontos_y))
+
+        if combo > 1:
+            cor_combo = self._cor_combo(combo)
+            combo_surface = fonte_combo.render(f"COMBO x{combo}", True, cor_combo)
+            combo_x = self.screen.get_width() - combo_surface.get_width() - 12
+            combo_y = self.screen.get_height() - 115
+            self.screen.blit(combo_surface, (combo_x, combo_y))
+    
+    def _cor_combo(self, combo):
+        """Retorna uma cor baseada no valor do combo"""
+        if combo >= 3:
+            return Colors.RED
+        elif combo >= 2.25:
+            return Colors.ORANGE
+        elif combo >= 1.75:
+            return Colors.YELLOW
+        else:
+            return Colors.WHITE

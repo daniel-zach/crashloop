@@ -4,7 +4,7 @@ Constantes utilizadas no jogo.
 
 # Dimensões da tela
 SCREEN_WIDTH = 960
-SCREEN_HEIGHT = 720
+SCREEN_HEIGHT = 960
 
 # FPS
 FPS = 60
@@ -13,6 +13,9 @@ FPS = 60
 class Colors:
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
+    RED = (255, 0, 0)
+    ORANGE = (255, 165, 0)
+    YELLOW = (255, 255, 0)
 
 # Estados do jogo
 class GameStates:
@@ -28,7 +31,7 @@ class ItemStates:
 
 # Velocidades
 RAQUETE_VEL_BASE = 7
-BOLA_VEL_MAX = 6
+BOLA_VEL_MAX = 7
 BOLA_DANO_INICIAL = 1
 
 # Dimensões dos objetos
@@ -46,6 +49,6 @@ ITEM_HEIGHT = 70
 
 CAIXA_WIDTH = 100
 CAIXA_HEIGHT = 100
-CAIXA_Y = 600
+CAIXA_Y = SCREEN_HEIGHT - 120
 CAIXA_START_X = 280
 CAIXA_SPACING = 50

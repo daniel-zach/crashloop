@@ -3,7 +3,7 @@ Objetos principais do jogo (Raquete, Bola, Telha, Item, Caixa).
 """
 import pygame
 import numpy as np
-from random import randint
+from random import randint, uniform
 from sprite_manager import sprite_manager
 from game_state import game_state
 from constants import *
@@ -41,9 +41,10 @@ class Bola(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.velocidade = [0, 0]
-        self.estado = 0  # 0: grudada na raquete, 1: em movimento
+        self.estado = 0  # 0: parada no centro, 1: em movimento
         self.max_velocidade = max_velocidade
         self.dano = dano
+        self.combo = 0.75  # Contador de combo
         sprite_manager.sprite_group.add(self)
 
     def bounce(self, raquete):
@@ -56,13 +57,22 @@ class Bola(pygame.sprite.Sprite):
             self.rect.y += self.velocidade[1]
             self._limitar_velocidade()
         else:
-            # Bola grudada na raquete
-            self.rect.x = raquete.rect.x + (raquete.width / 2)
-            self.rect.y = raquete.rect.y - self.height
-            
+            # Bola parada no centro
             if tecla[pygame.K_SPACE]:
-                self.velocidade = [0, -self.max_velocidade]
+                self._lancar_direcao_aleatoria()
                 self.estado = 1
+
+    def _lancar_direcao_aleatoria(self):
+        """Lança a bola em uma direção aleatória para cima"""
+        # Ângulo aleatório
+        angulo = uniform(60, 120)
+        angulo_rad = np.radians(angulo)
+        
+        # Calcular componentes x e y da velocidade
+        vel_x = self.max_velocidade * np.cos(angulo_rad)
+        vel_y = -self.max_velocidade * np.sin(angulo_rad)  # Negativo para ir para cima
+        
+        self.velocidade = [vel_x, vel_y]
 
     def _limitar_velocidade(self):
         """Limita a velocidade da bola ao máximo permitido"""
@@ -83,12 +93,13 @@ class Bola(pygame.sprite.Sprite):
             return False
             
         if tipo == 1:
-            # Colisão com raquete - baseada na posição de impacto
+            # Colisão com raquete: reseta o combo
             centro = obj.rect.x + (obj.width / 2)
             self.velocidade[0] = (self.rect.x - centro) / (10 / intensidade)
             self.velocidade[1] = -self.velocidade[1]
+            self.combo = 0.75  # Reset combo ao bater na raquete
         elif tipo == 2:
-            # Colisão com telha - baseada no lado do impacto
+            # Colisão com telha: mantém o combo
             centro_bola = self.rect.centerx
             if centro_bola < obj.rect.left or centro_bola > obj.rect.right:
                 self.velocidade[0] = -self.velocidade[0]
@@ -133,12 +144,19 @@ class Telha(pygame.sprite.Sprite):
         self.image.blit(texto, (x, y))
 
     def tomar_dano(self, dano):
-        """Causa dano à telha"""
-        # Adicionar pontos (limitado à vida restante)
-        game_state.pontos += min(dano, self.vida)
+        """Causa dano à telha e adiciona pontos com combo"""
+        # Incrementar combo
+        game_state.bola.combo += 0.25
+        
+        # Calcular pontos com multiplicador de combo
+        dano_real = min(dano, self.vida)
+        pontos_base = dano_real
+        pontos_combo = int(pontos_base * game_state.bola.combo)
+        
+        game_state.pontos += pontos_combo
         self.vida -= dano
         
-        print(f"Dano: {dano}, Vida restante: {self.vida}")
+        print(f"Dano: {dano}, Combo: {game_state.bola.combo}x, Pontos: +{pontos_combo}, Vida restante: {self.vida}")
         
         if self.vida <= 0:
             game_state.num_telhas -= 1

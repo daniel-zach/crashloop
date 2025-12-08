@@ -76,7 +76,7 @@ class Jogo:
         self.screen.fill(Colors.BLACK)
         
         # Desenhar HUD
-        self.ui.desenhar_hud(game_state.nivel, game_state.pontos)
+        self.ui.desenhar_hud(game_state.nivel, game_state.pontos, game_state.bola.combo)
         
         # Desenhar sprites
         sprite_manager.sprite_group.draw(self.screen)
@@ -140,6 +140,7 @@ class Jogo:
         bola.estado = 0
         self.running = False
         game_state.pontos = 0
+        game_state.bola.combo = 0.75
 
     def _reset_parcial(self, bola):
         """Reset parcial (só telhas)"""
@@ -151,6 +152,7 @@ class Jogo:
         bola.velocidade = [0, 0]
         bola.rect.x = game_state.raquete.rect.x + (game_state.raquete.width / 2)
         bola.rect.y = game_state.raquete.rect.y - bola.height
+        game_state.bola.combo = 0.75
         
         print("Reset parcial realizado")
 
