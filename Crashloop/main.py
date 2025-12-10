@@ -1,297 +1,302 @@
 import pygame
-from objetos import Telha, Item, ObjetosDefault
-from random import randint
-from util import renderSprites, Cores, gameState
-import itens
+from game_state import game_state
+from game_objects import Raquete, Bola, Telha, Caixa
+from sprite_manager import sprite_manager
+from ui_manager import UIManager
+from level_manager import LevelManager
+from item_manager import ItemManager
+from upgrade_manager import UpgradeManager
+from constants import *
+
 
 class Jogo:
+    """Classe principal que controla o loop"""
+    
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((960,720))
-        self.caption = pygame.display.set_caption("Crashloop")
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Crashloop")
         self.clock = pygame.time.Clock()
-        self.telhas = pygame.sprite.Group()
-        self.fonte = pygame.font.Font(None, 64)
-        self.ui = UI(self.screen)
+        
+        # Gerenciadores
+        self.ui = UIManager(self.screen)
+        self.level_manager = LevelManager()
+        self.item_manager = ItemManager()
+        self.upgrade_manager = UpgradeManager()
+        
+        # Estado inicial
         self.running = True
-        gameState.gamestate = 1
-        gameState.vidas = 0
+        game_state.game_state = GameStates.PLAYING
+        game_state.vidas = 0
+        game_state.pontos = 0
 
-    def main(self, raquete, bola, nivel):
-        # salvar para o gamestate
-        gameState.nivel = nivel
-        gameState.raquete = raquete
-        gameState.bola = bola
-        print(gameState.nivel)
+    def executar(self, raquete, bola, nivel):
+        """
+        Loop principal
+        
+        Args:
+            raquete: Objeto da raquete
+            bola: Objeto da bola
+            nivel: Nível inicial
+        """
+        # Salvar referências no estado global
+        game_state.nivel = nivel
+        game_state.raquete = raquete
+        game_state.bola = bola
+        
+        print(f"Nível {game_state.nivel}")
+        
         while self.running:
-            # fechar quando apertar o X
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-            if gameState.gamestate == 1:
-                self.moverraquete(raquete)
-                self.colidirbolacomparedes(bola)
-                bola.bounce(raquete)
-                bola.colidirbolacomobjetos(bola, raquete, 1, 1)
-                self.colidirbolacomtelha(bola)
-                self.concluirnivel()
-
-            renderSprites.listaSprites.update()
-            self.screen.fill(Cores.BLACK)
-            # texto do nível
-            nivel_surface = self.fonte.render(f"Nível: {gameState.nivel}", True, Cores.WHITE)
-            self.screen.blit(nivel_surface, (10, 650))
-            # texto dos pontos
-            pontos_surface = self.fonte.render(f"{gameState.pontos}", True, Cores.WHITE)
-            pontos_x = 960 - pontos_surface.get_width() - 10
-            self.screen.blit(pontos_surface, (pontos_x, 650))
-
-            renderSprites.listaSprites.draw(self.screen)
-            pygame.display.flip()
-            self.clock.tick(60)
+            self._processar_eventos()
+            
+            if game_state.game_state == GameStates.PLAYING:
+                self._atualizar_jogo(raquete, bola)
+            
+            self._renderizar()
+            self.clock.tick(FPS)
+            
         pygame.quit()
 
-    def iniciarfase(self, raquete, bola, telhamin, telhamax, quantmin, quantmax, nivel):
-        # define a criação de uma fase
-        # telhamin e telhamax define quantas linhas de telhas existe
-        # quantmin e quantmax define quantas telhas existem por linha
-        gameState.numTelhas = 0
-        gameState.nivel = nivel
-        raquete.rect.x = 480
-        raquete.rect.y = 550
-        bola.rect.x = 480
-        bola.rect.y = 500
-        for i in range(randint(telhamin,telhamax)):
-            self.criartelhas(quantmin, quantmax, (60 + i * 60))
-        # salvar dados para o gamestate
-        gameState.ultimonivel = nivel
-        gameState.telhamin = telhamin
-        gameState.telhamax = telhamax
-        gameState.quantmin = quantmin
-        gameState.quantmax = quantmax
-        self.running = True
-        self.main(raquete, bola, nivel)
+    def _processar_eventos(self):
+        """Processa eventos do pygame"""
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
 
-    def proximonivel(self, raquete, bola, nivel):
-        # define as propriedades da fase dependendo do nivel
-        if gameState.nivel != gameState.ultimonivel:
-            if nivel <= 5:
-                telhamax = 2 + nivel
-                telhamin = nivel
-                quantmax = 2 + nivel
-                quantmin = nivel
-            else:
-                telhamax = 7
-                telhamin = (3 * nivel)%7
-                quantmax = 8
-                quantmin = 2 + nivel%6
+    def _atualizar_jogo(self, raquete, bola):
+        """Atualiza a lógica do jogo"""
+        self._mover_raquete(raquete)
+        self._processar_colisoes_bola(bola)
+        bola.bounce(raquete)
+        bola.colidir_com_objeto(raquete, 1, 1)
+        self._verificar_colisao_telhas(bola)
+        self._verificar_conclusao_nivel()
 
-            self.iniciarfase(raquete, bola, telhamin, telhamax, quantmin, quantmax, nivel)
-        else:
-            self.iniciarfase(raquete, bola, gameState.telhamin, gameState.telhamax, gameState.quantmin, gameState.quantmax, nivel)
+    def _renderizar(self):
+        """Renderiza todos os elementos na tela"""
+        sprite_manager.sprite_group.update()
+        self.screen.fill(Colors.BLACK)
+        # Desenhar sprites
+        sprite_manager.sprite_group.draw(self.screen)
+        
+        # Desenhar HUD
+        self.ui.desenhar_hud(game_state.nivel, game_state.pontos, game_state.bola.combo, game_state.pontos_acumulados)
+        
+        # Desenhar stats no canto superior esquerdo
+        stats = self.upgrade_manager.get_stats_texto()
+        if stats:
+            self.ui.desenhar_stats(stats)
 
-    def reset_total(self, bola):
-        # usado quando o jogador não tem vidas sobrando
-        self.limpar_sprites()  # limpa telhas e itens
-        self.telhas.empty()
-        bola.estado = 0
-        self.running = False
-        gameState.pontos = 0
+        pygame.display.flip()
 
-    def reset_parcial(self, bola):
-        # limpa apenas as telhas
-        for spr in list(renderSprites.listaSprites):
-            if isinstance(spr, Telha):
-                spr.kill()
-
-        self.telhas.empty()
-        gameState.numTelhas = 0
-
-        # reseta apenas a bola para o estado inicial
-        bola.estado = 0
-        bola.velocidade = [0, 0]
-        bola.rect.x = gameState.raquete.rect.x + (gameState.raquete.width / 2)
-        bola.rect.y = gameState.raquete.rect.y - bola.height
-
-
-    def criartelhas(self, quantmin, quantmax, y):
-        rand = randint(quantmin,quantmax)
-        for i in range(rand):
-            telha = Telha(90, 30)
-            telha.rect.x = (480 - (rand * (telha.width + 20) / 2)) + i * (telha.width + 20)
-            telha.rect.y = y
-            self.telhas.add(telha)  
-            gameState.numTelhas += 1
-
-    def moverraquete(self, player):
+    def _mover_raquete(self, raquete):
+        """Controla o movimento da raquete"""
         tecla = pygame.key.get_pressed()
-        vel = 7 + getattr(player, "vel_extra", 0)
+        vel = RAQUETE_VEL_BASE + getattr(raquete, "vel_extra", 0)
 
         if tecla[pygame.K_LEFT]:
-            player.mover(-vel)
+            raquete.mover(-vel)
         if tecla[pygame.K_RIGHT]:
-            player.mover(vel)
-        # para debug
+            raquete.mover(vel)
+        
+        # Debug: pular nível
         if tecla[pygame.K_1]:
-            gameState.numTelhas = 0
-
-    def colidirbolacomparedes(self, bola):
-        if bola.rect.x >= (int(self.screen.get_width()) - 15):
-            bola.velocidade[0] = abs(bola.velocidade[0]) * -1
-        if bola.rect.x <= 0:
-            bola.velocidade[0] = abs(bola.velocidade[0])
-        if bola.rect.y <= 0:
-            bola.velocidade[1] = -bola.velocidade[1]
-        if bola.rect.y >= int(self.screen.get_height()):
-            # perdeu a bola
-            if gameState.vidas > 0:
-                gameState.vidas -= 1
-                self.limpar_item_vida_se_zerar()
-                self.reset_parcial(bola)
-                self.proximonivel(gameState.raquete, gameState.bola, gameState.nivel)
-                return
-
-            # morreu SEM vidas extra
-            self.reset_total(bola)
-            self.reset_itens()
-            gameState.nivel = 1
-            gameState.ultimonivel = 0
-
-            self.ui.tela_derrota()
-            self.ui.esperar_tecla()
-            self.proximonivel(gameState.raquete, gameState.bola, gameState.nivel)
-
-    def limpar_sprites(self):
-        # remove tudo exceto raquete, bola e caixas
-        for spr in list(renderSprites.listaSprites):
-            if isinstance(spr, Telha) or isinstance(spr, Item):
-                spr.kill()
-        gameState.numTelhas = 0
-
-    def reset_itens(self):
-        # limpa efeitos acumulados
-        for item in gameState.listaitems:
-            if item != 0:
-                # desfaz todos os stacks
-                for _ in range(item.stack):
-                    if hasattr(item, "desfazerefeito"):
-                        item.desfazerefeito()
-
-        # limpa lista de itens
-        for i in range(len(gameState.listaitems)):
-            gameState.listaitems[i] = 0
-
-        # resetar bônus da raquete
-        if hasattr(gameState.raquete, "vel_extra"):
-            gameState.raquete.vel_extra = 0
-
-        # resetar vidas extras
-        gameState.vidas = 0
-
-    def limpar_itens_soltos(self):
-        # remove somente itens que não estão nos slots
-        slots = set(gameState.listaitems)
-
-        for spr in list(renderSprites.listaSprites):
-            if isinstance(spr, Item):
-                if spr not in slots:
-                    spr.kill()
-
-    def limpar_item_vida_se_zerar(self):
-        # percorre todos os slots
-        for i, item in enumerate(gameState.listaitems):
-            if item != 0 and isinstance(item, itens.ItemVida):
-                if gameState.vidas == 0:
-                    # desfaz todos os stacks restantes
-                    for _ in range(item.stack):
-                        item.desfazerefeito()
-
-                    # remove do slot
-                    gameState.listaitems[i] = 0
-
-                    # remove sprite
-                    item.kill()
-
-    def concluirnivel(self):
-        if gameState.numTelhas <= 0:
-            self.reset_parcial(gameState.bola)
-            self.telhas.empty()   # limpa lista de telhas
-
+            self._reset_parcial(game_state.bola)
+            self.level_manager.limpar_telhas()
             self.ui.tela_vitoria()
             self.ui.esperar_tecla()
+            game_state.ultimo_nivel = game_state.nivel
+            game_state.nivel += 1
+            self._escolher_recompensa()
 
-            gameState.ultimonivel = gameState.nivel
-            gameState.nivel += 1
+    def _processar_colisoes_bola(self, bola):
+        """Processa colisões da bola com as paredes"""
+        # Parede direita
+        if bola.rect.x >= SCREEN_WIDTH - 15:
+            bola.velocidade[0] = abs(bola.velocidade[0]) * -1
+        
+        # Parede esquerda
+        if bola.rect.x <= 0:
+            bola.velocidade[0] = abs(bola.velocidade[0])
+        
+        # Teto
+        if bola.rect.y <= 0:
+            bola.velocidade[1] = -bola.velocidade[1]
+        
+        # Chão (perder bola)
+        if bola.rect.y >= SCREEN_HEIGHT:
+            self._perder_bola(bola)
 
-            self.escolheritems()
+    def _perder_bola(self, bola):
+        """Processa a perda da bola"""
+        if game_state.vidas > 0:
+            # Tem vidas extras
+            game_state.vidas -= 1
+            self.item_manager.limpar_item_vida_se_zerar()
+            self._reset_parcial(bola)
+            self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
+        else:
+            # Game over
+            self._reset_total(bola)
+            self.item_manager.reset_itens()
+            self.upgrade_manager.reset_upgrades()
+            game_state.nivel = 1
+            game_state.ultimo_nivel = 0
+            
+            self.ui.tela_derrota()
+            self.ui.esperar_tecla()
+            self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
 
-    def escolheritems(self):
-        from itens import ItemDano, ItemVelRaquete, ItemVida
-        classes = [ItemDano, ItemVelRaquete, ItemVida]
+    def _reset_total(self, bola):
+        """Reset completo"""
+        self._limpar_sprites()
+        self.level_manager.limpar_telhas()
+        bola.estado = 0
+        self.running = False
+        game_state.pontos = 0
+        game_state.bola.combo = 0
 
-        for x in range(randint(1,3)):
-            item_cls = classes[randint(0, 2)]
-            item = item_cls()
-            item.rect.x = 345 + x * (100)
-            item.rect.y = 400
+    def _reset_parcial(self, bola):
+        """Reset parcial (só telhas)"""
+        # Limpa as telhas através do level_manager
+        self.level_manager.limpar_telhas()
+        
+        # Resetar bola
+        bola.estado = 0
+        bola.velocidade = [0, 0]
+        bola.rect.x = game_state.raquete.rect.x + (game_state.raquete.width / 2)
+        bola.rect.y = game_state.raquete.rect.y - bola.height
+        game_state.bola.combo = 0
+        
+        print("Reset parcial realizado")
 
-        self.proximonivel(gameState.raquete, gameState.bola, gameState.nivel)
+    def _limpar_sprites(self):
+        """Remove telhas e itens da tela"""
+        from game_objects import Telha, Item
+        
+        for sprite in list(sprite_manager.sprite_group):
+            if isinstance(sprite, (Telha, Item)):
+                sprite.kill()
+        
+        game_state.num_telhas = 0
 
-    def colidirbolacomtelha(self, bola):
-        listacolisao = pygame.sprite.spritecollide(bola, self.telhas, False)
-        for telha in listacolisao:
-            bola.colidirbolacomobjetos(bola, telha, 1, 2)
-            telha.tomardano(bola.dano)
+    def _verificar_colisao_telhas(self, bola):
+        """Verifica colisões da bola com telhas"""
+        # Criar grupo temporário com as telhas do level_manager
+        telhas_grupo = pygame.sprite.Group()
+        for telha in self.level_manager.telhas[:]:  # Cópia da lista
+            if telha.alive():  # Verifica se a telha ainda está viva
+                telhas_grupo.add(telha)
+        
+        lista_colisao = pygame.sprite.spritecollide(bola, telhas_grupo, False)
+        
+        for telha in lista_colisao:
+            if telha.alive():
+                bola.colidir_com_objeto(telha, 1, 2)
+                telha.tomar_dano(bola.dano)
 
-class UI:
-    def __init__(self, screen):
-        self.screen = screen
-        self.font_title = pygame.font.Font(None, 96)
-        self.font_text  = pygame.font.Font(None, 48)
+    def _verificar_conclusao_nivel(self):
+        """Verifica se o nível foi concluído"""
+        # Sincronizar contador com telhas vivas
+        telhas_vivas = sum(1 for t in self.level_manager.telhas if t.alive())
+        game_state.num_telhas = telhas_vivas
+        
+        if game_state.num_telhas <= 0:
+            self._reset_parcial(game_state.bola)
+            self.level_manager.limpar_telhas()
+            
+            self.ui.tela_vitoria()
+            self.ui.esperar_tecla()
+            
+            game_state.ultimo_nivel = game_state.nivel
+            game_state.nivel += 1
+            
+            # Menu de upgrades e itens
+            self._escolher_recompensa()
 
-    def desenhar_texto(self, texto, y, fonte, cor=Cores.WHITE):
-        surface = fonte.render(texto, True, cor)
-        rect = surface.get_rect(center=(480, y))
-        self.screen.blit(surface, rect)
+    def _escolher_recompensa(self):
+        """Permite ao jogador escolher uma recompensa (upgrade ou item)"""
+        print("Gerando opções de recompensa...")
+        opcoes = self.upgrade_manager.gerar_opcoes_recompensa(3)
+        
+        print("Exibindo menu de recompensa...")
+        escolha_idx = self.ui.tela_recompensa(opcoes)
+        
+        # Processar escolha
+        recompensa_escolhida = opcoes[escolha_idx]
+        
+        if recompensa_escolhida.tipo == "upgrade":
+            # Aplicar upgrade diretamente
+            self.upgrade_manager.processar_escolha(recompensa_escolhida)
+            print(f"Upgrade aplicado: {recompensa_escolhida.nome}")
+        else:
+            # Spawnar item na tela
+            item = self.upgrade_manager.processar_escolha(
+                recompensa_escolhida, 
+                spawn_x=SCREEN_WIDTH // 2 - ITEM_WIDTH // 2,
+                spawn_y=400
+            )
+            print(f"Item spawnado: {recompensa_escolhida.nome}")
+        
+        # Aguardar um momento
+        pygame.time.delay (300)
+        
+        # Continuar para o próximo nível
+        self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
 
-    def tela_inicio(self):
-        self.screen.fill(Cores.BLACK)
-        self.desenhar_texto("CRASHLOOP", 200, self.font_title)
-        self.desenhar_texto("Pressione ENTER para começar", 350, self.font_text)
+    def proximo_nivel(self, raquete, bola, nivel):
+        """Avança para o próximo nível"""
+        if game_state.nivel != game_state.ultimo_nivel:
+            # Novo nível - calcular parâmetros
+            parametros = self.level_manager.calcular_parametros_nivel(nivel)
+            self.iniciar_fase(raquete, bola, *parametros, nivel)
+        else:
+            # Repetir nível atual
+            self.iniciar_fase(
+                raquete, bola,
+                game_state.telha_min, game_state.telha_max,
+                game_state.quant_min, game_state.quant_max,
+                nivel
+            )
 
-        fonte_controles = pygame.font.Font(None, 30)
-        self.desenhar_texto("Setas: mover", 480, fonte_controles)
-        self.desenhar_texto("Mouse: arrastar itens", 520, fonte_controles)
-        self.desenhar_texto("Botão direito: deletar item", 560, fonte_controles)
-        pygame.display.flip()
+    def iniciar_fase(self, raquete, bola, telha_min, telha_max, 
+                     quant_min, quant_max, nivel):
+        """
+        Inicia uma nova fase do jogo.
+        
+        Args:
+            raquete: Objeto da raquete
+            bola: Objeto da bola
+            telha_min: Número mínimo de linhas de telhas
+            telha_max: Número máximo de linhas de telhas
+            quant_min: Quantidade mínima de telhas por linha
+            quant_max: Quantidade máxima de telhas por linha
+            nivel: Número do nível
+        """
+        self.level_manager.iniciar_fase(
+            raquete, bola, telha_min, telha_max, 
+            quant_min, quant_max, nivel
+        )
+        self.running = True
+        self.executar(raquete, bola, nivel)
 
 
-    def tela_vitoria(self):
-        self.screen.fill(Cores.BLACK)
-        self.desenhar_texto("Fase concluída!", 250, self.font_title)
-        self.desenhar_texto("Pressione ENTER para continuar", 400, self.font_text)
-        pygame.display.flip()
-
-    def tela_derrota(self):
-        self.screen.fill(Cores.BLACK)
-        self.desenhar_texto("Você perdeu!", 250, self.font_title)
-        self.desenhar_texto("Pressione ENTER para tentar novamente", 400, self.font_text)
-        pygame.display.flip()
-
-    def esperar_tecla(self):
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-
-            tecla = pygame.key.get_pressed()
-            if tecla[pygame.K_RETURN]:
-                return
+def inicializar_objetos():
+    """Inicializa os objetos padrão do jogo"""
+    bola = Bola()
+    raquete = Raquete()
+    
+    # Criar caixas de itens
+    for i in range(3):
+        Caixa(location=i)
+    
+    return raquete, bola
 
 
 if __name__ == "__main__":
     jogo = Jogo()
     jogo.ui.tela_inicio()
     jogo.ui.esperar_tecla()
-    jogo.iniciarfase(ObjetosDefault.raquete, ObjetosDefault.bola, 1, 2, 1, 4, 1)
+    
+    raquete, bola = inicializar_objetos()
+    jogo.iniciar_fase(raquete, bola, 1, 2, 1, 4, 1)
