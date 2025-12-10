@@ -2,6 +2,7 @@ import pygame
 from game_state import game_state
 from game_objects import Raquete, Bola, Telha, Caixa
 from sprite_manager import sprite_manager
+from audio_manager import audio_manager
 from ui_manager import UIManager
 from level_manager import LevelManager
 from item_manager import ItemManager
@@ -23,6 +24,8 @@ class Jogo:
         self.level_manager = LevelManager()
         self.item_manager = ItemManager()
         self.upgrade_manager = UpgradeManager()
+
+        audio_manager.iniciar_playlist()
         
         # Estado inicial
         self.running = True
@@ -62,6 +65,7 @@ class Jogo:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            audio_manager.processar_eventos_musica(event)
 
     def _atualizar_jogo(self, raquete, bola):
         """Atualiza a lógica do jogo"""
@@ -114,14 +118,17 @@ class Jogo:
         # Parede direita
         if bola.rect.x >= SCREEN_WIDTH - 15:
             bola.velocidade[0] = abs(bola.velocidade[0]) * -1
+            audio_manager.tocar_sfx("sfx_hit")
         
         # Parede esquerda
         if bola.rect.x <= 0:
             bola.velocidade[0] = abs(bola.velocidade[0])
+            audio_manager.tocar_sfx("sfx_hit")
         
         # Teto
         if bola.rect.y <= 0:
             bola.velocidade[1] = -bola.velocidade[1]
+            audio_manager.tocar_sfx("sfx_hit")
         
         # Chão (perder bola)
         if bola.rect.y >= SCREEN_HEIGHT:
@@ -155,6 +162,7 @@ class Jogo:
         self.running = False
         game_state.pontos = 0
         game_state.bola.combo = 0
+        audio_manager.resetar_pitch_sfx("sfx_hit")
 
     def _reset_parcial(self, bola):
         """Reset parcial (só telhas)"""
@@ -167,6 +175,7 @@ class Jogo:
         bola.rect.x = game_state.raquete.rect.x + (game_state.raquete.width / 2)
         bola.rect.y = game_state.raquete.rect.y - bola.height
         game_state.bola.combo = 0
+        audio_manager.resetar_pitch_sfx("sfx_hit")
         
         print("Reset parcial realizado")
 

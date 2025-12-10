@@ -7,6 +7,7 @@ from random import randint, uniform
 from sprite_manager import sprite_manager
 from game_state import game_state
 from constants import *
+from audio_manager import audio_manager
 
 
 class Raquete(pygame.sprite.Sprite):
@@ -87,6 +88,9 @@ class Bola(pygame.sprite.Sprite):
             self.velocidade[1] = -self.velocidade[1]
             self.combo = 0
             game_state.pontos_acumulados = 0
+            # Tocar som e resetar o pitch de hit
+            audio_manager.tocar_sfx("sfx_hit_raquete")
+            audio_manager.resetar_pitch_sfx("sfx_hit")
         elif tipo == 2:
             # Colisão com telha
             centro_bola = self.rect.centerx
@@ -94,7 +98,7 @@ class Bola(pygame.sprite.Sprite):
                 self.velocidade[0] = -self.velocidade[0]
             else:
                 self.velocidade[1] = -self.velocidade[1]
-                
+
         return True
 
 
@@ -132,7 +136,6 @@ class Telha(pygame.sprite.Sprite):
     def tomar_dano(self, dano):
         """Causa dano à telha e adiciona pontos com combo"""
         game_state.bola.combo += 1
-
         dano_real = min(dano, self.vida)
         pontos_combo = int(dano_real * (game_state.bola.combo*0.25 + 1))
         
@@ -145,10 +148,14 @@ class Telha(pygame.sprite.Sprite):
         
         if self.vida <= 0:
             game_state.num_telhas -= 1
+            audio_manager.tocar_sfx("sfx_quebra")
             if self.level_manager and self in self.level_manager.telhas:
                 self.level_manager.telhas.remove(self)
             self.kill()
-            print(f"Telha destruída! Telhas restantes: {game_state.num_telhas}")
+            print(f"Telha destruída! Telhas restantes: {game_state.num_telhas}") 
+        else:
+            audio_manager.tocar_sfx("sfx_hit")
+        audio_manager.aumentar_pitch_sfx("sfx_hit", 0.1)
 
 
 class Item(pygame.sprite.Sprite):
