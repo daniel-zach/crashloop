@@ -20,6 +20,7 @@ class GameState:
         self.quant_max = 0
         self.quantidade_items = 0
         self.pontos = 0
+        self.pontos_acumulados = 0
         self.vidas = 0
 
     def reset_items(self):
@@ -37,6 +38,7 @@ class GameState:
         self.nivel = 1
         self.ultimo_nivel = 0
         self.pontos = 0
+        self.pontos_acumulados = 0
         self.vidas = 0
 
 

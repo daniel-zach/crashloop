@@ -5,6 +5,7 @@ from sprite_manager import sprite_manager
 from ui_manager import UIManager
 from level_manager import LevelManager
 from item_manager import ItemManager
+from upgrade_manager import UpgradeManager
 from constants import *
 
 
@@ -21,6 +22,7 @@ class Jogo:
         self.ui = UIManager(self.screen)
         self.level_manager = LevelManager()
         self.item_manager = ItemManager()
+        self.upgrade_manager = UpgradeManager()
         
         # Estado inicial
         self.running = True
@@ -74,12 +76,17 @@ class Jogo:
         """Renderiza todos os elementos na tela"""
         sprite_manager.sprite_group.update()
         self.screen.fill(Colors.BLACK)
-        
-        # Desenhar HUD
-        self.ui.desenhar_hud(game_state.nivel, game_state.pontos, game_state.bola.combo)
-        
         # Desenhar sprites
         sprite_manager.sprite_group.draw(self.screen)
+        
+        # Desenhar HUD
+        self.ui.desenhar_hud(game_state.nivel, game_state.pontos, game_state.bola.combo, game_state.pontos_acumulados)
+        
+        # Desenhar stats no canto superior esquerdo
+        stats = self.upgrade_manager.get_stats_texto()
+        if stats:
+            self.ui.desenhar_stats(stats)
+
         pygame.display.flip()
 
     def _mover_raquete(self, raquete):
@@ -94,7 +101,13 @@ class Jogo:
         
         # Debug: pular nível
         if tecla[pygame.K_1]:
-            game_state.num_telhas = 0
+            self._reset_parcial(game_state.bola)
+            self.level_manager.limpar_telhas()
+            self.ui.tela_vitoria()
+            self.ui.esperar_tecla()
+            game_state.ultimo_nivel = game_state.nivel
+            game_state.nivel += 1
+            self._escolher_recompensa()
 
     def _processar_colisoes_bola(self, bola):
         """Processa colisões da bola com as paredes"""
@@ -126,6 +139,7 @@ class Jogo:
             # Game over
             self._reset_total(bola)
             self.item_manager.reset_itens()
+            self.upgrade_manager.reset_upgrades()
             game_state.nivel = 1
             game_state.ultimo_nivel = 0
             
@@ -140,7 +154,7 @@ class Jogo:
         bola.estado = 0
         self.running = False
         game_state.pontos = 0
-        game_state.bola.combo = 0.75
+        game_state.bola.combo = 0
 
     def _reset_parcial(self, bola):
         """Reset parcial (só telhas)"""
@@ -152,12 +166,12 @@ class Jogo:
         bola.velocidade = [0, 0]
         bola.rect.x = game_state.raquete.rect.x + (game_state.raquete.width / 2)
         bola.rect.y = game_state.raquete.rect.y - bola.height
-        game_state.bola.combo = 0.75
+        game_state.bola.combo = 0
         
         print("Reset parcial realizado")
 
     def _limpar_sprites(self):
-        """Remove telhas e itens da tela."""
+        """Remove telhas e itens da tela"""
         from game_objects import Telha, Item
         
         for sprite in list(sprite_manager.sprite_group):
@@ -197,11 +211,37 @@ class Jogo:
             game_state.ultimo_nivel = game_state.nivel
             game_state.nivel += 1
             
-            self._escolher_itens()
+            # Menu de upgrades e itens
+            self._escolher_recompensa()
 
-    def _escolher_itens(self):
-        """Permite ao jogador escolher novos itens"""
-        self.item_manager.gerar_itens_aleatorios(1, 3)
+    def _escolher_recompensa(self):
+        """Permite ao jogador escolher uma recompensa (upgrade ou item)"""
+        print("Gerando opções de recompensa...")
+        opcoes = self.upgrade_manager.gerar_opcoes_recompensa(3)
+        
+        print("Exibindo menu de recompensa...")
+        escolha_idx = self.ui.tela_recompensa(opcoes)
+        
+        # Processar escolha
+        recompensa_escolhida = opcoes[escolha_idx]
+        
+        if recompensa_escolhida.tipo == "upgrade":
+            # Aplicar upgrade diretamente
+            self.upgrade_manager.processar_escolha(recompensa_escolhida)
+            print(f"Upgrade aplicado: {recompensa_escolhida.nome}")
+        else:
+            # Spawnar item na tela
+            item = self.upgrade_manager.processar_escolha(
+                recompensa_escolhida, 
+                spawn_x=SCREEN_WIDTH // 2 - ITEM_WIDTH // 2,
+                spawn_y=400
+            )
+            print(f"Item spawnado: {recompensa_escolhida.nome}")
+        
+        # Aguardar um momento
+        pygame.time.delay (300)
+        
+        # Continuar para o próximo nível
         self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
 
     def proximo_nivel(self, raquete, bola, nivel):

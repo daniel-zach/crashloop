@@ -1,7 +1,6 @@
 """
 Gerenciamento de itens e seus efeitos.
 """
-from random import randint
 from game_state import game_state
 from game_objects import Item
 from sprite_manager import sprite_manager
@@ -23,10 +22,6 @@ class ItemManager:
         # Limpar lista de itens
         for i in range(len(game_state.lista_items)):
             game_state.lista_items[i] = 0
-
-        # Resetar bônus da raquete
-        if hasattr(game_state.raquete, "vel_extra"):
-            game_state.raquete.vel_extra = 0
 
         # Resetar vidas extras
         game_state.vidas = 0
@@ -56,16 +51,3 @@ class ItemManager:
 
                     # Remove sprite
                     item.kill()
-
-    def gerar_itens_aleatorios(self, quantidade_min=1, quantidade_max=3):
-        """Gera itens aleatórios após completar uma fase"""
-        from items import ItemDano, ItemVelRaquete, ItemVida
-        
-        classes_itens = [ItemDano, ItemVelRaquete, ItemVida]
-        quantidade = randint(quantidade_min, quantidade_max)
-        
-        for x in range(quantidade):
-            item_cls = classes_itens[randint(0, len(classes_itens) - 1)]
-            item = item_cls()
-            item.rect.x = 345 + x * 100
-            item.rect.y = 400

@@ -6,7 +6,7 @@ import os
 
 # Configuração de paths
 path = os.path.split(os.path.abspath(__file__))[0]
-assets = os.path.join(path, "assets")
+assets = os.path.join(path, "assets/images")
 
 
 class SpriteManager:

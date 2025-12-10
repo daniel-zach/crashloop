@@ -25,7 +25,6 @@ class Raquete(pygame.sprite.Sprite):
     def mover(self, pixels):
         """Move a raquete horizontalmente."""
         self.rect.x += pixels
-        # Limitar movimento às bordas da tela
         self.rect.x = max(0, min(self.rect.x, SCREEN_WIDTH - self.width))
 
 
@@ -41,10 +40,10 @@ class Bola(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.velocidade = [0, 0]
-        self.estado = 0  # 0: parada no centro, 1: em movimento
+        self.estado = 0
         self.max_velocidade = max_velocidade
         self.dano = dano
-        self.combo = 0.75  # Contador de combo
+        self.combo = 0
         sprite_manager.sprite_group.add(self)
 
     def bounce(self, raquete):
@@ -52,25 +51,21 @@ class Bola(pygame.sprite.Sprite):
         tecla = pygame.key.get_pressed()
         
         if self.estado == 1:
-            # Bola em movimento
             self.rect.x += self.velocidade[0]
             self.rect.y += self.velocidade[1]
             self._limitar_velocidade()
         else:
-            # Bola parada no centro
             if tecla[pygame.K_SPACE]:
                 self._lancar_direcao_aleatoria()
                 self.estado = 1
 
     def _lancar_direcao_aleatoria(self):
         """Lança a bola em uma direção aleatória para cima"""
-        # Ângulo aleatório
         angulo = uniform(60, 120)
         angulo_rad = np.radians(angulo)
         
-        # Calcular componentes x e y da velocidade
         vel_x = self.max_velocidade * np.cos(angulo_rad)
-        vel_y = -self.max_velocidade * np.sin(angulo_rad)  # Negativo para ir para cima
+        vel_y = -self.max_velocidade * np.sin(angulo_rad)
         
         self.velocidade = [vel_x, vel_y]
 
@@ -81,25 +76,19 @@ class Bola(pygame.sprite.Sprite):
                 self.velocidade[i] = int(self.max_velocidade * np.sign(self.velocidade[i]))
 
     def colidir_com_objeto(self, obj, intensidade=1, tipo=1):
-        """
-        Verifica e trata colisão com objetos.
-        
-        Args:
-            obj: Objeto com o qual colidir
-            intensidade: Intensidade da resposta
-            tipo: Tipo de colisão (1: raquete, 2: telha)
-        """
+        """Verifica e trata colisão com objetos"""
         if not pygame.sprite.collide_mask(self, obj):
             return False
             
         if tipo == 1:
-            # Colisão com raquete: reseta o combo
+            # Colisão com raquete
             centro = obj.rect.x + (obj.width / 2)
             self.velocidade[0] = (self.rect.x - centro) / (10 / intensidade)
             self.velocidade[1] = -self.velocidade[1]
-            self.combo = 0.75  # Reset combo ao bater na raquete
+            self.combo = 0
+            game_state.pontos_acumulados = 0
         elif tipo == 2:
-            # Colisão com telha: mantém o combo
+            # Colisão com telha
             centro_bola = self.rect.centerx
             if centro_bola < obj.rect.left or centro_bola > obj.rect.right:
                 self.velocidade[0] = -self.velocidade[0]
@@ -122,7 +111,6 @@ class Telha(pygame.sprite.Sprite):
         self.font = pygame.font.Font(None, 28)
         self.level_manager = level_manager
         
-        # Vida baseada no nível
         if game_state.nivel == 1:
             self.vida = 1
         else:
@@ -132,12 +120,10 @@ class Telha(pygame.sprite.Sprite):
 
     def update(self):
         """Atualiza a aparência da telha com o texto de vida"""
-        # Recarregar imagem base
         self.image, _ = sprite_manager.carregar_imagem(
             "telha.png", self.width, self.height, -1
         )
         
-        # Renderizar vida no centro
         texto = self.font.render(str(self.vida), True, Colors.BLACK)
         x = (self.width - texto.get_width()) // 2
         y = (self.height - texto.get_height()) // 2
@@ -145,22 +131,20 @@ class Telha(pygame.sprite.Sprite):
 
     def tomar_dano(self, dano):
         """Causa dano à telha e adiciona pontos com combo"""
-        # Incrementar combo
-        game_state.bola.combo += 0.25
-        
-        # Calcular pontos com multiplicador de combo
+        game_state.bola.combo += 1
+
         dano_real = min(dano, self.vida)
-        pontos_base = dano_real
-        pontos_combo = int(pontos_base * game_state.bola.combo)
+        pontos_combo = int(dano_real * (game_state.bola.combo*0.25 + 1))
         
         game_state.pontos += pontos_combo
+        if dano_real < pontos_combo:
+            game_state.pontos_acumulados += pontos_combo - dano_real
         self.vida -= dano
         
         print(f"Dano: {dano}, Combo: {game_state.bola.combo}x, Pontos: +{pontos_combo}, Vida restante: {self.vida}")
         
         if self.vida <= 0:
             game_state.num_telhas -= 1
-            # Remove da lista do level_manager se existir
             if self.level_manager and self in self.level_manager.telhas:
                 self.level_manager.telhas.remove(self)
             self.kill()
@@ -182,7 +166,10 @@ class Item(pygame.sprite.Sprite):
         self.triggers = 0
         self.location = 0
         self.stack = 0
+        self.limite = 1
+        self.tipo_item = ItemTypes.PASSIVE
         self.font = pygame.font.Font(None, 24)
+        self.font_small = pygame.font.Font(None, 18)
         sprite_manager.sprite_group.add(self)
 
     def mover_item(self):
@@ -220,12 +207,15 @@ class Item(pygame.sprite.Sprite):
                 self.triggers = 1
                 return
 
-            # Empilhar item do mesmo tipo
+            # Empilhar item do mesmo tipo (verificar limite)
             if isinstance(slot_item, self.__class__):
-                slot_item.stack += 1
-                if hasattr(slot_item, "aplicar_efeito"):
-                    slot_item.aplicar_efeito()
-                self.kill()
+                if slot_item.stack < slot_item.limite:
+                    slot_item.stack += 1
+                    if hasattr(slot_item, "aplicar_efeito"):
+                        slot_item.aplicar_efeito()
+                    self.kill()
+                else:
+                    print(f"Limite de {slot_item.limite} stacks atingido!")
                 return
 
     def _posicionar_na_caixa(self, caixa):
@@ -242,11 +232,9 @@ class Item(pygame.sprite.Sprite):
         mouse_pos = pygame.mouse.get_pos()
         if pygame.mouse.get_pressed()[2] and self.rect.collidepoint(mouse_pos):
             if self.stack > 1:
-                # Reduzir stack
                 self.stack -= 1
                 self.desfazer_efeito()
             else:
-                # Remover item completamente
                 game_state.lista_items[self.location] = 0
                 self.desfazer_efeito()
                 self.kill()
@@ -264,22 +252,41 @@ class Item(pygame.sprite.Sprite):
         self.mover_item()
         self.detectar_caixa()
         self.deletar_self()
-        self._atualizar_display_stack()
+        self.item()
+        self._atualizar_display()
 
-    def _atualizar_display_stack(self):
-        """Atualiza o número de stacks exibido"""
-        # Recarregar imagem base
+    def _atualizar_display(self):
+        """Atualiza a aparência do item com informações"""
         self.image, _ = sprite_manager.carregar_imagem(
             f"{self.nome}.png", self.width, self.height, -1
         )
         
-        # Mostrar stack apenas se estiver em uma caixa
-        valor = self.stack if self.estado == ItemStates.SLOTTED else 0
-        texto = self.font.render(str(valor), True, Colors.WHITE)
-        
-        x = self.width - texto.get_width() - 4
-        y = self.height - texto.get_height() - 4
-        self.image.blit(texto, (x, y))
+        if self.estado == ItemStates.SLOTTED:
+            # Mostrar stack para passivos
+            if self.tipo_item == ItemTypes.PASSIVE:
+                texto = self.font.render(str(self.stack), True, Colors.WHITE)
+                x = self.width - texto.get_width() - 4
+                y = self.height - texto.get_height() - 4
+                self.image.blit(texto, (x, y))
+            
+            # Mostrar cargas para ativos (se aplicável)
+            elif self.tipo_item == ItemTypes.ACTIVE:
+                if hasattr(self, "get_cargas_disponiveis"):
+                    cargas = self.get_cargas_disponiveis()
+                    total = self.stack
+                    
+                    # Texto de cargas
+                    texto = self.font.render(f"{cargas}/{total}", True, Colors.GREEN if cargas > 0 else Colors.RED)
+                    x = self.width - texto.get_width() - 4
+                    y = self.height - texto.get_height() - 4
+                    self.image.blit(texto, (x, y))
+                    
+                    # Mostrar menor cooldown se houver
+                    if cargas < total and hasattr(self, "get_menor_cooldown"):
+                        cd = self.get_menor_cooldown()
+                        cd_segundos = cd / 60.0
+                        texto_cd = self.font_small.render(f"{cd_segundos:.1f}s", True, Colors.YELLOW)
+                        self.image.blit(texto_cd, (4, 4))
 
 
 class Caixa(pygame.sprite.Sprite):
