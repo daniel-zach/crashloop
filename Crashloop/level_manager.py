@@ -27,8 +27,8 @@ class LevelManager:
         for i in range(quantidade):
             telha = Telha(level_manager=self)  # Passa como argumento nomeado
             # Centralizar linha de telhas
-            inicio_x = (SCREEN_WIDTH - (quantidade * (telha.width + 20))) / 2
-            telha.rect.x = inicio_x + i * (telha.width + 20)
+            inicio_x = (SCREEN_WIDTH - (quantidade * (telha.width + 10))) / 2
+            telha.rect.x = inicio_x + i * (telha.width + 10)
             telha.rect.y = y
             self.telhas.append(telha)
             game_state.num_telhas += 1
@@ -70,30 +70,22 @@ class LevelManager:
         game_state.quant_max = quant_max
 
     def calcular_parametros_nivel(self, nivel):
-        """
-        Calcula os parâmetros de dificuldade para um nível.
-        
-        Args:
-            nivel: Número do nível
-            
-        Returns:
-            tuple: (telha_min, telha_max, quant_min, quant_max)
-        """
+        """Calcula os parâmetros de dificuldade para um nível"""
         if nivel <= 5:
-            telha_max = 2 + nivel
-            telha_min = nivel
+            telha_max = 1 + nivel
+            telha_min = max(2, nivel-1)
             quant_max = 2 + nivel
-            quant_min = nivel
+            quant_min = max(2, nivel)
         else:
-            telha_max = 7
-            telha_min = (3 * nivel) % 7
-            quant_max = 8
+            telha_max = min(nivel,9)
+            telha_min = max(3, (3 * nivel) % 7)
+            quant_max = 9
             quant_min = 2 + nivel % 6
             
         return telha_min, telha_max, quant_min, quant_max
 
     def limpar_telhas(self):
-        """Remove todas as telhas da fase."""
+        """Remove todas as telhas da fase"""
         from game_objects import Telha
         from sprite_manager import sprite_manager
         
