@@ -44,7 +44,7 @@
 - Cores aleatórias para os elementos e background.
 
 ## Release notes
-### 12/11/2025
+### 11/12/2025
 - Adicionado cores aleatórias às telhas.
 - Adicionado cor aleatória para o fundo.
 - Correção do bug onde a bola fica presa na raquete.
