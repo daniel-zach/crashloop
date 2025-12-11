@@ -17,9 +17,28 @@ class Colors:
     ORANGE = (255, 165, 0)
     YELLOW = (255, 255, 0)
     CYAN = (0, 255, 255)
-    GREEN = (0, 255, 0)
+    GREEN = (0, 255, 0) 
     GRAY = (82, 82, 82)
     BOX_PURPLE = (34, 32, 52)
+    
+    # Cores para telhas
+    TILE_PURPLE = (113, 29, 176)
+    TILE_MAGENTA = (194, 18, 146)
+    TILE_RED = (239, 64, 64)
+    TILE_GREEN = (65, 166, 126)
+    TILE_YELLOW = (252, 199, 55)
+
+    TILE_COLORS = [TILE_PURPLE, TILE_MAGENTA, TILE_RED, TILE_YELLOW, TILE_GREEN]
+    
+    # Cores de fundo
+    DARK_GREEN = (15, 40, 25)
+    DARK_PURPLE = (25, 15, 40)
+    DARK_BLUE = (15, 25, 45)
+    DARK_RED = (40, 15, 20)
+    DARK_CYAN = (15, 35, 40)
+    DARK_PINK = (40, 15, 30)
+    
+    BACKGROUND_COLORS = [DARK_GREEN, DARK_PURPLE, DARK_BLUE, DARK_RED, DARK_CYAN, DARK_PINK]
 
 # Estados do jogo
 class GameStates:
@@ -76,3 +95,16 @@ SLOT_KEY_NAMES = {
     1: "K",
     2: "L"
 }
+
+# Mapeamento de teclas para movimentação
+MOVE_LEFT_KEYS = [
+    pygame.K_a,
+    pygame.K_LEFT,
+    pygame.K_KP_4
+]
+
+MOVE_RIGHT_KEYS = [
+    pygame.K_d,
+    pygame.K_RIGHT,
+    pygame.K_KP_6
+]

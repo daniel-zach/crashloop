@@ -26,10 +26,10 @@ class UIManager:
         self.desenhar_texto("CRASHLOOP", 300, self.font_title)
         self.desenhar_texto("Pressione ESPAÇO para começar", 450, self.font_text)
         
-        self.desenhar_texto("Setas: mover", 580, self.font_small)
+        self.desenhar_texto("Setas/A-D: mover", 580, self.font_small)
         self.desenhar_texto("Espaço: lançar bola", 610, self.font_small)
         self.desenhar_texto("Mouse: arrastar itens", 640, self.font_small)
-        self.desenhar_texto("Botão direito: deletar item", 670, self.font_small)
+        self.desenhar_texto("Botão direito: remover item", 670, self.font_small)
         
         pygame.display.flip()
 
@@ -85,12 +85,12 @@ class UIManager:
                 pontos_combo_rotated = pygame.transform.rotate(pontos_combo_surface, 15)
                 # Posicionar na esquerda do valor de pontos
                 pontos_combo_x = pontos_x - pontos_combo_rotated.get_width() + 12
-                pontos_combo_y = pontos_y - 22
+                pontos_combo_y = pontos_y - 20
                 
                 self.screen.blit(pontos_combo_rotated, (pontos_combo_x, pontos_combo_y))
             
             combo_surface = fonte_combo.render(f"COMBO x{combo}!", True, cor_combo)
-            combo_x = self.screen.get_width() - combo_surface.get_width() - 12
+            combo_x = self.screen.get_width() - combo_surface.get_width() - 20
             combo_y = self.screen.get_height() - 115
             self.screen.blit(combo_surface, (combo_x, combo_y))
         

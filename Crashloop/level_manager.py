@@ -1,10 +1,11 @@
 """
 Gerenciamento de níveis e fases do jogo.
 """
-from random import randint
+import os
+from random import randint, choice
 from game_objects import Telha
 from game_state import game_state
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, Colors
 
 
 class LevelManager:
@@ -12,6 +13,7 @@ class LevelManager:
     
     def __init__(self):
         self.telhas = []
+        self.cores_usadas = []
 
     def criar_telhas(self, quant_min, quant_max, y):
         """
@@ -24,8 +26,21 @@ class LevelManager:
         """
         quantidade = randint(quant_min, quant_max)
         
+        # Escolher uma cor para a linha
+        cores_disponiveis = [cor for cor in Colors.TILE_COLORS if cor not in self.cores_usadas]
+
+        # Se todas as cores já foram usadas resetar a lista
+        if not cores_disponiveis:
+            self.cores_usadas.clear()
+            cores_disponiveis = Colors.TILE_COLORS.copy()
+
+        cor_linha = choice(cores_disponiveis)
+        self.cores_usadas.append(cor_linha)
+        
         for i in range(quantidade):
-            telha = Telha(level_manager=self)  # Passa como argumento nomeado
+
+
+            telha = Telha(level_manager=self, cor=cor_linha)  # Passa como argumento nomeado
             # Centralizar linha de telhas
             inicio_x = (SCREEN_WIDTH - (quantidade * (telha.width + 10))) / 2
             telha.rect.x = inicio_x + i * (telha.width + 10)
@@ -50,6 +65,8 @@ class LevelManager:
         game_state.num_telhas = 0
         game_state.nivel = nivel
         
+        self.cores_usadas.clear()
+
         # Posicionar raquete e bola
         raquete.rect.x = SCREEN_WIDTH // 2 - raquete.width // 2
         raquete.rect.y = SCREEN_HEIGHT - 250
@@ -95,5 +112,6 @@ class LevelManager:
                 telha.kill()
         
         self.telhas.clear()
+        self.cores_usadas.clear()
         game_state.num_telhas = 0
         print("Todas as telhas foram limpas")

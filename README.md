@@ -40,14 +40,23 @@
 - Sistema de upgrades funcional, incluindo 2 novos upgrades adicionados.  
 - Sistema de itens randomizados, atualmente com 4 novos itens disponíveis em cada run.  
 - Playlist dinâmica com músicas tocando em sequência durante as fases.  
-- Sistema de combos: permite limpar fases inteiras de uma só vez, criando momentos de impacto *extremo*.  
+- Sistema de combos: permite limpar fases inteiras de uma só vez, criando momentos de impacto *extremo*.
+- Cores aleatórias para os elementos e background.
+
+## Release notes
+### 12/11/2025
+- Adicionado cores aleatórias às telhas.
+- Adicionado cor aleatória para o fundo.
+- Correção do bug onde a bola fica presa na raquete.
+- Agora é possível usar A-D e NUM_4-NUM-6 além das setas para controlar a raquete.
 
 ## Prints do Jogo
 ### Tela de Titulo
 ![Tela de Titulo do Crashloop](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/start_menu)
 ### Jogo
-![O segundo nível de uma rodada de Crashloop.](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/level2)
-![Um nível mais avançado de uma rodada de Crashloop](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/level15_combo)
+![O segundo nível de uma rodada de Crashloop.](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/lvl2)
+![Um nível mais avançado de uma rodada de Crashloop](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/lvl15)
+![Um nível mais avançado de uma rodada de Crashloop](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/combo)
 ### Menu de Recompensas
 ![Menu de recompensas](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/reward_screen)
 ---

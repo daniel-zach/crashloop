@@ -132,9 +132,9 @@ class ItemDash(Item):
         tecla = pygame.key.get_pressed()
         direcao = 0
         
-        if tecla[pygame.K_LEFT]:
+        if any(tecla[k] for k in MOVE_LEFT_KEYS):
             direcao = -1
-        elif tecla[pygame.K_RIGHT]:
+        if any(tecla[k] for k in MOVE_RIGHT_KEYS):
             direcao = 1
         else:
             direcao = random.choice([-1, 1])

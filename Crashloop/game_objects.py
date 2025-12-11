@@ -47,7 +47,7 @@ class Bola(pygame.sprite.Sprite):
         self.combo = 0
         sprite_manager.sprite_group.add(self)
 
-    def bounce(self, raquete):
+    def bounce(self):
         """Controla o movimento e lançamento da bola"""
         tecla = pygame.key.get_pressed()
         
@@ -85,7 +85,7 @@ class Bola(pygame.sprite.Sprite):
             # Colisão com raquete
             centro = obj.rect.x + (obj.width / 2)
             self.velocidade[0] = (self.rect.x - centro) / (10 / intensidade)
-            self.velocidade[1] = -self.velocidade[1]
+            self.velocidade[1] = -abs(self.velocidade[1]) # Colisão com raquete sempre fará o eixo Y ser negativo
             self.combo = 0
             game_state.pontos_acumulados = 0
             # Tocar som e resetar o pitch de hit
@@ -170,7 +170,7 @@ class BolaClone(pygame.sprite.Sprite):
             # Colisão com raquete
             centro = obj.rect.x + (obj.width / 2)
             self.velocidade[0] = (self.rect.x - centro) / (10 / intensidade)
-            self.velocidade[1] = -self.velocidade[1]
+            self.velocidade[1] = -abs(self.velocidade[1])
             audio_manager.tocar_sfx("sfx_hit_raquete")
         elif tipo == 2:
             # Colisão com telha
@@ -186,7 +186,7 @@ class BolaClone(pygame.sprite.Sprite):
 class Telha(pygame.sprite.Sprite):
     """Telha que pode ser destruída pela bola"""
     
-    def __init__(self, width=TELHA_WIDTH, height=TELHA_HEIGHT, level_manager=None):
+    def __init__(self, width=TELHA_WIDTH, height=TELHA_HEIGHT, level_manager=None, cor=None):
         super().__init__()
         self.image, self.rect = sprite_manager.carregar_imagem(
             "telha.png", width, height, -1
@@ -195,6 +195,7 @@ class Telha(pygame.sprite.Sprite):
         self.height = height
         self.font = pygame.font.Font(None, 28)
         self.level_manager = level_manager
+        self.cor = cor if cor else Colors.WHITE
         
         if game_state.nivel == 1:
             self.vida = 1
@@ -209,6 +210,11 @@ class Telha(pygame.sprite.Sprite):
             "telha.png", self.width, self.height, -1
         )
         
+        # Mudar cor da telha
+        overlay = pygame.Surface((self.width, self.height))
+        overlay.fill(self.cor)
+        self.image.blit(overlay, (0, 0), special_flags=pygame.BLEND_MULT)
+
         texto = self.font.render(str(self.vida), True, Colors.BLACK)
         x = (self.width - texto.get_width()) // 2
         y = (self.height - texto.get_height()) // 2

@@ -1,4 +1,5 @@
 import pygame
+from random import choice
 from game_state import game_state
 from game_objects import Raquete, Bola, Telha, Caixa
 from sprite_manager import sprite_manager
@@ -32,6 +33,9 @@ class Jogo:
         game_state.game_state = GameStates.PLAYING
         game_state.vidas = 0
         game_state.pontos = 0
+        
+        # Cor de fundo aleatória
+        self.cor_fundo = choice(Colors.BACKGROUND_COLORS)
 
     def executar(self, raquete, bola, nivel):
         """
@@ -71,7 +75,7 @@ class Jogo:
         """Atualiza a lógica do jogo"""
         self._mover_raquete(raquete)
         self._processar_colisoes_bola(bola)
-        bola.bounce(raquete)
+        bola.bounce()
         bola.colidir_com_objeto(raquete, 1, 1)
         self._verificar_colisao_telhas(bola)
         self._processar_clones(raquete)
@@ -80,7 +84,9 @@ class Jogo:
     def _renderizar(self):
         """Renderiza todos os elementos na tela"""
         sprite_manager.sprite_group.update()
-        self.screen.fill(Colors.BLACK)
+
+        self.screen.fill(self.cor_fundo)
+
         # Desenhar sprites
         sprite_manager.sprite_group.draw(self.screen)
         
@@ -99,9 +105,9 @@ class Jogo:
         tecla = pygame.key.get_pressed()
         vel = RAQUETE_VEL_BASE + getattr(raquete, "vel_extra", 0)
 
-        if tecla[pygame.K_LEFT]:
+        if any(tecla[k] for k in MOVE_LEFT_KEYS):
             raquete.mover(-vel)
-        if tecla[pygame.K_RIGHT]:
+        if any(tecla[k] for k in MOVE_RIGHT_KEYS):
             raquete.mover(vel)
         
         # Debug: pular nível
@@ -285,7 +291,7 @@ class Jogo:
             print(f"Item spawnado: {recompensa_escolhida.nome}")
         
         # Aguardar um momento
-        pygame.time.delay (300)
+        pygame.time.delay(300)
         
         # Continuar para o próximo nível
         self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
@@ -323,6 +329,10 @@ class Jogo:
             raquete, bola, telha_min, telha_max, 
             quant_min, quant_max, nivel
         )
+
+        # Escolher nova cor de fundo
+        self.cor_fundo = choice(Colors.BACKGROUND_COLORS)
+        
         self.running = True
         self.executar(raquete, bola, nivel)
 
