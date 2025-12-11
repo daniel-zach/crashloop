@@ -19,7 +19,7 @@ class AudioManager:
         pygame.mixer.init()
         
         # Configurações de volume (0.0 a 1.0)
-        self.volume_musica = 0.03
+        self.volume_musica = 0.02
         self.volume_sfx = 0.5
         
         # Cache de efeitos sonoros carregados

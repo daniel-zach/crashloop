@@ -109,7 +109,7 @@ class UpgradeManager:
         
         for _ in range(quantidade):
             # Sortear se será upgrade ou item
-            if random() < 0.5:  # chance de ser item
+            if random() < 0.45:  # chance de ser item
                 # Escolher item baseado em probabilidade
                 itens_possiveis = []
                 for item_reward in self.itens_recompensa:

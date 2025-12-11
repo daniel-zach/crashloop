@@ -102,6 +102,87 @@ class Bola(pygame.sprite.Sprite):
         return True
 
 
+class BolaClone(pygame.sprite.Sprite):
+    """Bola clone que não causa fim de nível ao cair"""
+    
+    def __init__(self, width=BOLA_WIDTH, height=BOLA_HEIGHT, 
+                 max_velocidade=BOLA_VEL_MAX, dano=BOLA_DANO_INICIAL):
+        super().__init__()
+        self.image, self.rect = sprite_manager.carregar_imagem(
+            "bola.png", width, height, -1
+        )
+        
+        # Aplicar transparência (opacidade reduzida)
+        self.image.set_alpha(150)  # 0-255, onde 255 é opaco
+        
+        self.width = width
+        self.height = height
+        self.velocidade = [0, 0]
+        self.estado = 1  # Sempre em movimento
+        self.max_velocidade = max_velocidade
+        self.dano = dano
+        sprite_manager.sprite_group.add(self)
+
+    def update(self):
+        """Atualiza a posição do clone"""
+        if self.estado == 1:
+            self.rect.x += self.velocidade[0]
+            self.rect.y += self.velocidade[1]
+            self._limitar_velocidade()
+            self._verificar_colisoes_parede()
+            self._verificar_morte()
+
+    def _limitar_velocidade(self):
+        """Limita a velocidade da bola ao máximo permitido"""
+        for i in range(2):
+            if abs(self.velocidade[i]) >= self.max_velocidade:
+                self.velocidade[i] = int(self.max_velocidade * np.sign(self.velocidade[i]))
+
+    def _verificar_colisoes_parede(self):
+        """Verifica colisões com as paredes"""
+        # Parede direita
+        if self.rect.x >= SCREEN_WIDTH - 15:
+            self.velocidade[0] = abs(self.velocidade[0]) * -1
+            audio_manager.tocar_sfx("sfx_hit")
+        
+        # Parede esquerda
+        if self.rect.x <= 0:
+            self.velocidade[0] = abs(self.velocidade[0])
+            audio_manager.tocar_sfx("sfx_hit")
+        
+        # Teto
+        if self.rect.y <= 0:
+            self.velocidade[1] = -self.velocidade[1]
+            audio_manager.tocar_sfx("sfx_hit")
+
+    def _verificar_morte(self):
+        """Remove o clone se cair no chão"""
+        if self.rect.y >= SCREEN_HEIGHT:
+            print("Clone caiu e foi destruído")
+            self.kill()
+
+    def colidir_com_objeto(self, obj, intensidade=1, tipo=1):
+        """Verifica e trata colisão com objetos"""
+        if not pygame.sprite.collide_mask(self, obj):
+            return False
+            
+        if tipo == 1:
+            # Colisão com raquete
+            centro = obj.rect.x + (obj.width / 2)
+            self.velocidade[0] = (self.rect.x - centro) / (10 / intensidade)
+            self.velocidade[1] = -self.velocidade[1]
+            audio_manager.tocar_sfx("sfx_hit_raquete")
+        elif tipo == 2:
+            # Colisão com telha
+            centro_bola = self.rect.centerx
+            if centro_bola < obj.rect.left or centro_bola > obj.rect.right:
+                self.velocidade[0] = -self.velocidade[0]
+            else:
+                self.velocidade[1] = -self.velocidade[1]
+
+        return True
+
+
 class Telha(pygame.sprite.Sprite):
     """Telha que pode ser destruída pela bola"""
     
@@ -144,6 +225,12 @@ class Telha(pygame.sprite.Sprite):
             game_state.pontos_acumulados += pontos_combo - dano_real
         self.vida -= dano
         
+        # Notificar itens explosivos sobre a colisão
+        if hasattr(game_state.bola, 'itens_explosivos'):
+            for item in game_state.bola.itens_explosivos:
+                if hasattr(item, 'notificar_colisao_telha'):
+                    item.notificar_colisao_telha(self)
+
         print(f"Dano: {dano}, Combo: {game_state.bola.combo}x, Pontos: +{pontos_combo}, Vida restante: {self.vida}")
         
         if self.vida <= 0:

@@ -78,7 +78,7 @@ class LevelManager:
             quant_min = max(2, nivel)
         else:
             telha_max = min(nivel,9)
-            telha_min = max(2, (3 * nivel) % 7)
+            telha_min = max(3, (3 * nivel) % 7)
             quant_max = 9
             quant_min = 2 + nivel % 6
             
