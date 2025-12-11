@@ -48,7 +48,7 @@
 - Adicionado cores aleatórias às telhas.
 - Adicionado cor aleatória para o fundo.
 - Correção do bug onde a bola fica presa na raquete.
-- Agora é possível usar A-D e NUM_4-NUM-6 além das setas para controlar a raquete.
+- Agora é possível usar A-D e NUM_4-NUM_6 além das setas para controlar a raquete.
 
 ## Prints do Jogo
 ### Tela de Titulo
