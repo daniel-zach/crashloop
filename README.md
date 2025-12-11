@@ -15,40 +15,41 @@
 ## Mecânica Básica  
 - Rebata a bola para destruir blocos e avançar fases.  
 - A cada nova rodada, a disposição dos blocos, os efeitos e os desafios mudam.  
-- Entre as rodadas, você escolhe upgrades, modificadores e habilidades que alteram o comportamento da bola, dos blocos e da plataforma.  
-- Quando a fase termina, um novo nível de desafio surge. Se falhar, volta ao início ou a um checkpoint, dependendo do modo.
+- Entre as rodadas, você escolhe upgrades e itens que alteram o comportamento da bola, dos blocos e da plataforma.  
+- Quando a fase termina, um novo nível de desafio surge. Se falhar, volta ao início.
 
 ## Recursos Principais  
 
 ### Progressão roguelike  
 - Cada sessão é diferente: disposição dos blocos, power-ups disponíveis e modificadores aleatórios.  
-- A cada “loop” você acumula melhorias permanentes (por exemplo habilidades desbloqueadas) e escolhas temporárias para a próxima fase.
+- A cada “loop” você acumula melhorias permanentes (upgrades e itens).
 
 ### Dinâmica de breakout modernizada  
-- A bola e os blocos têm estatísticas ou efeitos especiais: blocos que regeneram, bolas que mudam de comportamento, blocos que rebatem contra você, etc.  
-- A plataforma pode ser melhorada.
+- A bola e os blocos têm estatísticas e efeitos especiais.  
+- Melhorias adicionam elementos completamente novos à gameplay.
 
-### Escolhas e riscos  
-- Após cada fase você escolhe entre múltiplos power-ups ou modificadores. Balanceando vantagem e risco. 
-- Há modos de “loop” mais difícil onde os blocos têm efeitos deletérios ou comportamentos imprevisíveis.
+### Escolhas 
+- Após cada fase você escolhe entre múltiplos itens ou upgrades. É preciso balancear vantagem e risco com uma quantia limitada disponível. 
 
 ### Construção de meta-progressão  
-- Você desbloqueia habilidades, melhorias permanentes e novos tipos de bola/plataforma conforme joga.  
-- Cada volta bem-sucedida dá acesso a mais conteúdo e permite que você vá mais longe no próximo loop.
+- Você desbloqueia habilidades e melhorias permanentes conforme joga.  
+- Cada nível dá acesso a mais conteúdo e permite que você vá mais longe.
 
 ## Estado Atual do Projeto  
 
-Versão inicial com as mecânicas básicas: 
-- Vida dos blocos.  
-- Sistema de power-ups/upgrade.  
-- Loop de meta-progressão. 
+- Sistema de upgrades funcional, incluindo 2 novos upgrades adicionados.  
+- Sistema de itens randomizados, atualmente com 4 novos itens disponíveis em cada run.  
+- Playlist dinâmica com músicas tocando em sequência durante as fases.  
+- Sistema de combos: permite limpar fases inteiras de uma só vez, criando momentos de impacto *extremo*.  
 
 ## Prints do Jogo
 ### Tela de Titulo
-![Tela de Titulo do Crashloop](https://file.garden/aTHbGAX8eEY4Irux/Crashloop/screencap0.png)
+![Tela de Titulo do Crashloop](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/start_menu)
 ### Jogo
-![O primeiro nível de uma rodada de Crashloop.](https://file.garden/aTHbGAX8eEY4Irux/Crashloop/screencap1.png)
-![Um nível mais avançado de uma rodada de Crashloop](https://file.garden/aTHbGAX8eEY4Irux/Crashloop/screencap2.png)
+![O segundo nível de uma rodada de Crashloop.](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/level2)
+![Um nível mais avançado de uma rodada de Crashloop](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/level15_combo)
+### Menu de Recompensas
+![Menu de recompensas](https://file.garden/aTokqyD_EwuDgkjD/Crashloop/reward_screen)
 ---
 <br>Universidade Federal Rural de Pernambuco 
 <br>Bacharelado em Sistemas de Informação
