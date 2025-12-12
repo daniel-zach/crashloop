@@ -24,7 +24,6 @@ class AudioManager:
         
         # Cache de efeitos sonoros carregados
         self.sfx_cache = {}
-
         self.sfx_pitch = 1
 
         # Cache de sons originais (sem o pitch shift)
@@ -34,25 +33,16 @@ class AudioManager:
         self.playlist = []
         self.playlist_index = 0
         self.playlist_ativa = False
-        
-        
-        # Música atual tocando
-        # Música atual tocando
+           
+        # Música atual
         self.musica_atual = None
-        self.musica_atual = None
-        
         
         # Configurar evento de fim de música
         self.MUSIC_END = pygame.USEREVENT + 1
         pygame.mixer.music.set_endevent(self.MUSIC_END)
         
-        print("Audio Manager inicializado")
-        print("Audio Manager inicializado")
-        
-        # Criar playlist automaticamente
+        # Criar playlist
         self._criar_playlist()
-        # Música atual tocando
-        self.musica_atual = None
         
         print("Audio Manager inicializado")
     
@@ -90,7 +80,7 @@ class AudioManager:
     def _criar_playlist(self):
         """
         Cria uma playlist com todas as músicas da pasta music.
-        A ordem é randomizada.
+        Ordem randomizada.
         """
         if not os.path.exists(music_path):
             print(f"Aviso: Pasta de música não encontrada: {music_path}")
@@ -117,9 +107,7 @@ class AudioManager:
         print(f"Playlist criada com {len(self.playlist)} músicas: {', '.join(self.playlist)}")
     
     def iniciar_playlist(self):
-        """
-        Inicia a reprodução da playlist.
-        As músicas tocam em sequência e depois se repetem.
+        """Inicia a reprodução da playlist
         """
         if not self.playlist:
             print("Playlist vazia, não há músicas para tocar")

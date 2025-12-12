@@ -69,6 +69,7 @@ class Jogo:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+                pygame.quit()
             audio_manager.processar_eventos_musica(event)
 
     def _atualizar_jogo(self, raquete, bola):
@@ -157,7 +158,7 @@ class Jogo:
             game_state.nivel = 1
             game_state.ultimo_nivel = 0
             
-            self.ui.tela_derrota()
+            self.ui.tela_derrota(game_state.pontos)
             self.ui.esperar_tecla()
             self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
 
