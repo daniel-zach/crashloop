@@ -3,6 +3,12 @@
 ## Visão Geral  
 “Crashloop” é uma reinvenção do clássico “breakout” com um toque roguelike: você controla uma plataforma e rebate uma bola para quebrar blocos, mas a cada fase a estrutura muda, os poderes evoluem e o risco cresce.
 
+## Releases
+
+**Acesse a última versão: [Aqui](https://github.com/daniel-zach/crashloop/releases/latest)**
+
+Todas as versões: [Aqui](https://github.com/daniel-zach/crashloop/releases)
+
 ## Dependências
 ### Pygame
 
