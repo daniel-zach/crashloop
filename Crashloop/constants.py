@@ -4,7 +4,7 @@ Constantes utilizadas no jogo.
 
 # Dimensões da tela
 SCREEN_WIDTH = 960
-SCREEN_HEIGHT = 960
+SCREEN_HEIGHT = 930
 
 # FPS
 FPS = 60

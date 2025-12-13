@@ -72,33 +72,49 @@ class Bola(pygame.sprite.Sprite):
 
     def _limitar_velocidade(self):
         """Limita a velocidade da bola ao máximo permitido"""
+        epsilon = 0.31
         for i in range(2):
-            if abs(self.velocidade[i]) >= self.max_velocidade:
-                self.velocidade[i] = int(self.max_velocidade * np.sign(self.velocidade[i]))
+            velocidade = self.velocidade[i]
+            # Se a bola se aproximar de 0, arredondamos
+            if abs(velocidade) < epsilon:
+                self.velocidade[i] = 0
+                continue
+            if abs(velocidade) >= self.max_velocidade:
+                self.velocidade[i] = int(self.max_velocidade * np.sign(velocidade))
 
     def colidir_com_objeto(self, obj, intensidade=1, tipo=1):
         """Verifica e trata colisão com objetos"""
         if not pygame.sprite.collide_mask(self, obj):
             return False
-            
+        
         if tipo == 1:
             # Colisão com raquete
-            centro = obj.rect.x + (obj.width / 2)
-            self.velocidade[0] = (self.rect.x - centro) / (10 / intensidade)
-            self.velocidade[1] = -abs(self.velocidade[1]) # Colisão com raquete sempre fará o eixo Y ser negativo
+            centro_raquete = obj.rect.centerx
+            centro_bola = self.rect.centerx
+            # Calcular diferença baseada nos centros
+            self.velocidade[0] = (centro_bola - centro_raquete) / (10 / intensidade)
+            self.velocidade[1] = -abs(self.velocidade[1])
             self.combo = 0
             game_state.pontos_acumulados = 0
+            
             # Tocar som e resetar o pitch de hit
             audio_manager.tocar_sfx("sfx_hit_raquete")
             audio_manager.resetar_pitch_sfx("sfx_hit")
         elif tipo == 2:
             # Colisão com telha
             centro_bola = self.rect.centerx
+            centro_telha = obj.rect.centerx
+
             if centro_bola < obj.rect.left or centro_bola > obj.rect.right:
                 self.velocidade[0] = -self.velocidade[0]
             else:
                 self.velocidade[1] = -self.velocidade[1]
 
+            if self.velocidade[0] == 0:
+                    diferenca = centro_telha - centro_bola
+                    if diferenca != 0:
+                        direcao = -1 if diferenca > 0 else 1
+                        self.velocidade[0] = direcao * (self.max_velocidade/3)
         return True
 
 
@@ -168,18 +184,27 @@ class BolaClone(pygame.sprite.Sprite):
             
         if tipo == 1:
             # Colisão com raquete
-            centro = obj.rect.x + (obj.width / 2)
-            self.velocidade[0] = (self.rect.x - centro) / (10 / intensidade)
+            centro_raquete = obj.rect.centerx
+            centro_bola = self.rect.centerx
+            # Calcular diferença baseada nos centros
+            self.velocidade[0] = (centro_bola - centro_raquete) / (10 / intensidade)
             self.velocidade[1] = -abs(self.velocidade[1])
             audio_manager.tocar_sfx("sfx_hit_raquete")
         elif tipo == 2:
             # Colisão com telha
             centro_bola = self.rect.centerx
+            centro_telha = obj.rect.centerx
+
             if centro_bola < obj.rect.left or centro_bola > obj.rect.right:
                 self.velocidade[0] = -self.velocidade[0]
             else:
                 self.velocidade[1] = -self.velocidade[1]
 
+            if self.velocidade[0] == 0:
+                    diferenca = centro_telha - centro_bola
+                    if diferenca != 0:
+                        direcao = -1 if diferenca > 0 else 1
+                        self.velocidade[0] = direcao * (self.max_velocidade/3)
         return True
 
 

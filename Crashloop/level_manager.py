@@ -42,7 +42,9 @@ class LevelManager:
 
             telha = Telha(level_manager=self, cor=cor_linha)  # Passa como argumento nomeado
             # Centralizar linha de telhas
-            inicio_x = (SCREEN_WIDTH - (quantidade * (telha.width + 10))) / 2
+            espacamento = 10
+            largura_total = (quantidade * telha.width) + ((quantidade - 1) * espacamento)
+            inicio_x = (SCREEN_WIDTH - largura_total) / 2
             telha.rect.x = inicio_x + i * (telha.width + 10)
             telha.rect.y = y
             self.telhas.append(telha)

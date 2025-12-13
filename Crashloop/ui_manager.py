@@ -2,6 +2,7 @@
 Gerenciamento da interface do usuário.
 """
 import pygame
+import sys
 from constants import Colors, SLOT_KEY_NAMES, ItemTypes
 from audio_manager import audio_manager
 
@@ -44,7 +45,7 @@ class UIManager:
     def tela_derrota(self, pontos=0):
         """Exibe a tela de derrota"""
         self.screen.fill(Colors.BLACK)
-        self.desenhar_texto("Você perdeu!", 300, self.font_title)
+        self.desenhar_texto("Você perdeu a bola!", 300, self.font_title)
         self.desenhar_texto(f"Sua pontuação: {pontos}", 450, self.font_text)
         self.desenhar_texto("Pressione ESPAÇO para tentar novamente", 550, self.font_text)
         pygame.display.flip()
@@ -55,7 +56,7 @@ class UIManager:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    exit()
+                    sys.exit()
                 audio_manager.processar_eventos_musica(event)
 
             tecla = pygame.key.get_pressed()

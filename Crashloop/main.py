@@ -1,4 +1,5 @@
 import pygame
+import sys
 from random import choice
 from game_state import game_state
 from game_objects import Raquete, Bola, Telha, Caixa
@@ -63,13 +64,13 @@ class Jogo:
             self.clock.tick(FPS)
             
         pygame.quit()
+        sys.exit()
 
     def _processar_eventos(self):
         """Processa eventos do pygame"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-                pygame.quit()
             audio_manager.processar_eventos_musica(event)
 
     def _atualizar_jogo(self, raquete, bola):
@@ -152,13 +153,14 @@ class Jogo:
             self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
         else:
             # Game over
+            pontuacao = game_state.pontos
             self._reset_total(bola)
             self.item_manager.reset_itens()
             self.upgrade_manager.reset_upgrades()
             game_state.nivel = 1
             game_state.ultimo_nivel = 0
             
-            self.ui.tela_derrota(game_state.pontos)
+            self.ui.tela_derrota(pontuacao)
             self.ui.esperar_tecla()
             self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
 
