@@ -97,6 +97,14 @@ SLOT_KEY_NAMES = {
 }
 
 # Mapeamento de teclas para movimentação
+MOVE_SLOW_KEYS = [
+    pygame.K_LSHIFT,
+    pygame.K_RSHIFT,
+    pygame.K_SPACE,
+    pygame.K_LALT,
+    pygame.K_RALT
+]
+
 MOVE_LEFT_KEYS = [
     pygame.K_a,
     pygame.K_LEFT,

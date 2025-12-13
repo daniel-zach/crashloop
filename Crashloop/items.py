@@ -7,7 +7,6 @@ from constants import *
 from audio_manager import audio_manager
 from sprite_manager import sprite_manager
 import pygame
-import random
 import math
 
 
@@ -61,7 +60,7 @@ class ItemDash(Item):
         nome="Dash",
         icone="item_dash",
         limite=2,
-        probabilidade=95,
+        probabilidade=25,
         descricao="Um dash na direção do movimento",
         tipo=ItemTypes.ACTIVE
     )
@@ -69,7 +68,7 @@ class ItemDash(Item):
     def __init__(self, width=ITEM_WIDTH, height=ITEM_HEIGHT):
         super().__init__(width, height, self.CONFIG.icone)
         self.dash_distance = DASH_DISTANCE
-        self.cooldown_max = 30  # Em FPS, 60 = 1 segundo
+        self.cooldown_max = 450  # Em FPS, 60 = 1 segundo
         self.input_buffer = 6
         self.limite = self.CONFIG.limite
         self.tipo_item = self.CONFIG.tipo

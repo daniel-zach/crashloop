@@ -68,7 +68,7 @@ class Bola(pygame.sprite.Sprite):
 
     def _lancar_direcao_aleatoria(self):
         """Lança a bola em uma direção aleatória para cima"""
-        ranges = [(60, 87), (93, 120)]
+        ranges = [(60, 85), (95, 120)]
         low, high = choice(ranges)
         angulo = randint(low, high)
         angulo_rad = np.radians(angulo)
@@ -80,7 +80,7 @@ class Bola(pygame.sprite.Sprite):
 
     def _limitar_velocidade(self):
         """Limita a velocidade da bola ao máximo permitido"""
-        epsilon = 0.51
+        epsilon = 1e-5
         for i in range(2):
             velocidade = self.velocidade[i]
             # Se a bola se aproximar de 0, arredondamos
@@ -94,14 +94,22 @@ class Bola(pygame.sprite.Sprite):
         """Verifica e trata colisão com objetos"""
         if not pygame.sprite.collide_mask(self, obj):
             return False
-        print(self.velocidade)
         if tipo == 1:
             # Colisão com raquete
             centro_raquete = obj.rect.centerx
             centro_bola = self.rect.centerx
             # Calcular diferença baseada nos centros
-            self.velocidade[0] = (centro_bola - centro_raquete) / (10 / intensidade)
+            diferenca = centro_bola - centro_raquete
+            self.velocidade[0] = (diferenca) / (10 / intensidade)
             self.velocidade[1] = -abs(self.velocidade[1])
+
+            # Se a diferença for pequena, aumentamos para dificultar zerar a velocidade da bola
+            if abs(self.velocidade[0]) <= 0.5:
+                    if abs(diferenca) > 1:
+                        multiplicador = 0.9/diferenca
+                        self.velocidade[0] = self.velocidade[0] + multiplicador
+
+            # Resetar combo
             self.combo = 0
             game_state.pontos_acumulados = 0
             
@@ -118,9 +126,9 @@ class Bola(pygame.sprite.Sprite):
             else:
                 self.velocidade[1] = -self.velocidade[1]
 
-            if self.velocidade[0] == 0:
+            if abs(self.velocidade[0]) <= 0.5: 
                     diferenca = centro_telha - centro_bola
-                    velocidade_minima = self.max_velocidade/4
+                    velocidade_minima = self.max_velocidade/3
                     if diferenca != 0:
                         direcao = -1 if diferenca > 0 else 1
                         self.velocidade[0] = direcao * (velocidade_minima)
@@ -140,7 +148,7 @@ class BolaClone(pygame.sprite.Sprite):
             "bola.png", width, height, -1
         )
         
-        # Aplicar transparência (opacidade reduzida)
+        # Aplicar transparência
         self.image.set_alpha(150)  # 0-255, onde 255 é opaco
         
         self.width = width
@@ -169,7 +177,7 @@ class BolaClone(pygame.sprite.Sprite):
     def _verificar_colisoes_parede(self):
         """Verifica colisões com as paredes"""
         # Parede direita
-        if self.rect.x >= SCREEN_WIDTH - 15:
+        if self.rect.x >= SCREEN_WIDTH - self.width:
             self.velocidade[0] = abs(self.velocidade[0]) * -1
             audio_manager.tocar_sfx("sfx_hit")
         
@@ -199,8 +207,18 @@ class BolaClone(pygame.sprite.Sprite):
             centro_raquete = obj.rect.centerx
             centro_bola = self.rect.centerx
             # Calcular diferença baseada nos centros
-            self.velocidade[0] = (centro_bola - centro_raquete) / (10 / intensidade)
+            diferenca = centro_bola - centro_raquete
+            self.velocidade[0] = (diferenca) / (10 / intensidade)
             self.velocidade[1] = -abs(self.velocidade[1])
+
+            # Se a diferença for pequena, aumentamos para dificultar zerar a velocidade da bola
+            if abs(self.velocidade[0]) <= 0.5:
+                    if abs(diferenca) > 1:
+                        multiplicador = 0.9/diferenca
+                        self.velocidade[0] = self.velocidade[0] + multiplicador
+                        print("Diferença usada! ",diferenca)
+                        print(self.velocidade)
+
             audio_manager.tocar_sfx("sfx_hit_raquete")
         elif tipo == 2:
             # Colisão com telha
@@ -212,11 +230,15 @@ class BolaClone(pygame.sprite.Sprite):
             else:
                 self.velocidade[1] = -self.velocidade[1]
 
-            if self.velocidade[0] == 0:
+            if self.velocidade[0] == 0 or abs(self.velocidade[0]) <= 0.5:
                     diferenca = centro_telha - centro_bola
+                    velocidade_minima = self.max_velocidade/3
                     if diferenca != 0:
                         direcao = -1 if diferenca > 0 else 1
-                        self.velocidade[0] = direcao * (self.max_velocidade/3)
+                        self.velocidade[0] = direcao * (velocidade_minima)
+                    else:
+                        direcao = choice([1,-1])
+                        self.velocidade[0] = direcao * (velocidade_minima)
         return True
 
 

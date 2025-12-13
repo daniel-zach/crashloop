@@ -29,9 +29,10 @@ class UIManager:
         self.desenhar_texto("Pressione ESPAÇO para começar", 450, self.font_text)
         
         self.desenhar_texto("Setas/A-D: mover", 580, self.font_small)
-        self.desenhar_texto("Espaço: lançar bola", 610, self.font_small)
-        self.desenhar_texto("Mouse: arrastar itens", 640, self.font_small)
-        self.desenhar_texto("Botão direito: remover item", 670, self.font_small)
+        self.desenhar_texto("Shift/Alt: modo de precisão", 610, self.font_small)
+        self.desenhar_texto("Espaço: lançar bola", 640, self.font_small)
+        self.desenhar_texto("Mouse: arrastar itens", 670, self.font_small)
+        self.desenhar_texto("Botão direito: remover item", 700, self.font_small)
         
         pygame.display.flip()
 
