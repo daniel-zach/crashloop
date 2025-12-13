@@ -154,13 +154,14 @@ class Jogo:
         else:
             # Game over
             pontuacao = game_state.pontos
+            nivel = game_state.ultimo_nivel
             self._reset_total(bola)
             self.item_manager.reset_itens()
             self.upgrade_manager.reset_upgrades()
             game_state.nivel = 1
             game_state.ultimo_nivel = 0
             
-            self.ui.tela_derrota(pontuacao)
+            self.ui.tela_derrota(pontuacao, nivel)
             self.ui.esperar_tecla()
             self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
 

@@ -3,7 +3,7 @@ Objetos principais do jogo (Raquete, Bola, Telha, Item, Caixa).
 """
 import pygame
 import numpy as np
-from random import randint, uniform
+from random import randint, uniform, choice
 from sprite_manager import sprite_manager
 from game_state import game_state
 from constants import *
@@ -21,10 +21,16 @@ class Raquete(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.vel_extra = 0
+        self.ultima_direcao = 1
         sprite_manager.sprite_group.add(self)
 
     def mover(self, pixels):
-        """Move a raquete horizontalmente."""
+        """Move a raquete horizontalmente"""
+        if pixels > 0:
+            self.ultima_direcao = 1  # Direita
+        elif pixels < 0:
+            self.ultima_direcao = -1  # Esquerda
+
         self.rect.x += pixels
         self.rect.x = max(0, min(self.rect.x, SCREEN_WIDTH - self.width))
 
@@ -62,7 +68,9 @@ class Bola(pygame.sprite.Sprite):
 
     def _lancar_direcao_aleatoria(self):
         """Lança a bola em uma direção aleatória para cima"""
-        angulo = uniform(60, 120)
+        ranges = [(60, 87), (93, 120)]
+        low, high = choice(ranges)
+        angulo = randint(low, high)
         angulo_rad = np.radians(angulo)
         
         vel_x = self.max_velocidade * np.cos(angulo_rad)
@@ -72,7 +80,7 @@ class Bola(pygame.sprite.Sprite):
 
     def _limitar_velocidade(self):
         """Limita a velocidade da bola ao máximo permitido"""
-        epsilon = 0.31
+        epsilon = 0.51
         for i in range(2):
             velocidade = self.velocidade[i]
             # Se a bola se aproximar de 0, arredondamos
@@ -86,7 +94,7 @@ class Bola(pygame.sprite.Sprite):
         """Verifica e trata colisão com objetos"""
         if not pygame.sprite.collide_mask(self, obj):
             return False
-        
+        print(self.velocidade)
         if tipo == 1:
             # Colisão com raquete
             centro_raquete = obj.rect.centerx
@@ -112,9 +120,13 @@ class Bola(pygame.sprite.Sprite):
 
             if self.velocidade[0] == 0:
                     diferenca = centro_telha - centro_bola
+                    velocidade_minima = self.max_velocidade/4
                     if diferenca != 0:
                         direcao = -1 if diferenca > 0 else 1
-                        self.velocidade[0] = direcao * (self.max_velocidade/3)
+                        self.velocidade[0] = direcao * (velocidade_minima)
+                    else:
+                        direcao = choice([1,-1])
+                        self.velocidade[0] = direcao * (velocidade_minima)
         return True
 
 

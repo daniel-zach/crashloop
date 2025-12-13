@@ -42,12 +42,13 @@ class UIManager:
         self.desenhar_texto("Pressione ESPAÇO para continuar", 500, self.font_text)
         pygame.display.flip()
 
-    def tela_derrota(self, pontos=0):
+    def tela_derrota(self, pontos=0, nivel=1):
         """Exibe a tela de derrota"""
         self.screen.fill(Colors.BLACK)
         self.desenhar_texto("Você perdeu a bola!", 300, self.font_title)
-        self.desenhar_texto(f"Sua pontuação: {pontos}", 450, self.font_text)
-        self.desenhar_texto("Pressione ESPAÇO para tentar novamente", 550, self.font_text)
+        self.desenhar_texto(f"Seu nível: {nivel}", 450, self.font_text)
+        self.desenhar_texto(f"Sua pontuação: {pontos}", 500, self.font_text)
+        self.desenhar_texto("Pressione ESPAÇO para tentar novamente", 600, self.font_text)
         pygame.display.flip()
 
     def esperar_tecla(self):

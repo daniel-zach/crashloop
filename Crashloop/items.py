@@ -61,7 +61,7 @@ class ItemDash(Item):
         nome="Dash",
         icone="item_dash",
         limite=2,
-        probabilidade=25,
+        probabilidade=95,
         descricao="Um dash na direção do movimento",
         tipo=ItemTypes.ACTIVE
     )
@@ -69,7 +69,7 @@ class ItemDash(Item):
     def __init__(self, width=ITEM_WIDTH, height=ITEM_HEIGHT):
         super().__init__(width, height, self.CONFIG.icone)
         self.dash_distance = DASH_DISTANCE
-        self.cooldown_max = 450  # Em FPS, 60 = 1 segundo
+        self.cooldown_max = 30  # Em FPS, 60 = 1 segundo
         self.input_buffer = 6
         self.limite = self.CONFIG.limite
         self.tipo_item = self.CONFIG.tipo
@@ -129,15 +129,7 @@ class ItemDash(Item):
         if not game_state.raquete:
             return
         
-        tecla = pygame.key.get_pressed()
-        direcao = 0
-        
-        if any(tecla[k] for k in MOVE_LEFT_KEYS):
-            direcao = -1
-        if any(tecla[k] for k in MOVE_RIGHT_KEYS):
-            direcao = 1
-        else:
-            direcao = random.choice([-1, 1])
+        direcao = getattr(game_state.raquete, "ultima_direcao", 1)
         
         nova_pos = game_state.raquete.rect.x + (self.dash_distance * direcao)
         nova_pos = max(0, min(nova_pos, SCREEN_WIDTH - game_state.raquete.width))
