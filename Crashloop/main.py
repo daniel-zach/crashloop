@@ -108,12 +108,18 @@ class Jogo:
         vel = RAQUETE_VEL_BASE + getattr(raquete, "vel_extra", 0)
 
         if any(tecla[k] for k in MOVE_LEFT_KEYS):
-            raquete.mover(-vel)
+            if any(tecla[k] for k in MOVE_SLOW_KEYS):
+                raquete.mover(-vel/2)
+            else:
+                raquete.mover(-vel)
         if any(tecla[k] for k in MOVE_RIGHT_KEYS):
-            raquete.mover(vel)
+            if any(tecla[k] for k in MOVE_SLOW_KEYS):
+                raquete.mover(vel/2)
+            else:
+                raquete.mover(vel)
         
         # Debug: pular nível
-        if tecla[pygame.K_1]:
+        if tecla[pygame.K_1] and tecla[pygame.K_4]:
             self._reset_parcial(game_state.bola)
             self.level_manager.limpar_telhas()
             self.ui.tela_vitoria()
@@ -125,7 +131,7 @@ class Jogo:
     def _processar_colisoes_bola(self, bola):
         """Processa colisões da bola com as paredes"""
         # Parede direita
-        if bola.rect.x >= SCREEN_WIDTH - 15:
+        if bola.rect.x >= SCREEN_WIDTH - bola.width:
             bola.velocidade[0] = abs(bola.velocidade[0]) * -1
             audio_manager.tocar_sfx("sfx_hit")
         
@@ -154,13 +160,14 @@ class Jogo:
         else:
             # Game over
             pontuacao = game_state.pontos
+            nivel = game_state.ultimo_nivel
             self._reset_total(bola)
             self.item_manager.reset_itens()
             self.upgrade_manager.reset_upgrades()
             game_state.nivel = 1
             game_state.ultimo_nivel = 0
             
-            self.ui.tela_derrota(pontuacao)
+            self.ui.tela_derrota(pontuacao, nivel)
             self.ui.esperar_tecla()
             self.proximo_nivel(game_state.raquete, game_state.bola, game_state.nivel)
 

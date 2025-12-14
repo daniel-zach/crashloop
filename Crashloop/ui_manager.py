@@ -29,9 +29,10 @@ class UIManager:
         self.desenhar_texto("Pressione ESPAÇO para começar", 450, self.font_text)
         
         self.desenhar_texto("Setas/A-D: mover", 580, self.font_small)
-        self.desenhar_texto("Espaço: lançar bola", 610, self.font_small)
-        self.desenhar_texto("Mouse: arrastar itens", 640, self.font_small)
-        self.desenhar_texto("Botão direito: remover item", 670, self.font_small)
+        self.desenhar_texto("Shift/Alt: modo de precisão", 610, self.font_small)
+        self.desenhar_texto("Espaço: lançar bola", 640, self.font_small)
+        self.desenhar_texto("Mouse: arrastar itens", 670, self.font_small)
+        self.desenhar_texto("Botão direito: remover item", 700, self.font_small)
         
         pygame.display.flip()
 
@@ -42,12 +43,13 @@ class UIManager:
         self.desenhar_texto("Pressione ESPAÇO para continuar", 500, self.font_text)
         pygame.display.flip()
 
-    def tela_derrota(self, pontos=0):
+    def tela_derrota(self, pontos=0, nivel=1):
         """Exibe a tela de derrota"""
         self.screen.fill(Colors.BLACK)
         self.desenhar_texto("Você perdeu a bola!", 300, self.font_title)
-        self.desenhar_texto(f"Sua pontuação: {pontos}", 450, self.font_text)
-        self.desenhar_texto("Pressione ESPAÇO para tentar novamente", 550, self.font_text)
+        self.desenhar_texto(f"Seu nível: {nivel}", 450, self.font_text)
+        self.desenhar_texto(f"Sua pontuação: {pontos}", 500, self.font_text)
+        self.desenhar_texto("Pressione ESPAÇO para tentar novamente", 600, self.font_text)
         pygame.display.flip()
 
     def esperar_tecla(self):

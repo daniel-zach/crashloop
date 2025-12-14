@@ -7,7 +7,6 @@ from constants import *
 from audio_manager import audio_manager
 from sprite_manager import sprite_manager
 import pygame
-import random
 import math
 
 
@@ -129,15 +128,7 @@ class ItemDash(Item):
         if not game_state.raquete:
             return
         
-        tecla = pygame.key.get_pressed()
-        direcao = 0
-        
-        if any(tecla[k] for k in MOVE_LEFT_KEYS):
-            direcao = -1
-        if any(tecla[k] for k in MOVE_RIGHT_KEYS):
-            direcao = 1
-        else:
-            direcao = random.choice([-1, 1])
+        direcao = getattr(game_state.raquete, "ultima_direcao", 1)
         
         nova_pos = game_state.raquete.rect.x + (self.dash_distance * direcao)
         nova_pos = max(0, min(nova_pos, SCREEN_WIDTH - game_state.raquete.width))
