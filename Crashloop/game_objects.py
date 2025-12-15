@@ -51,6 +51,7 @@ class Bola(pygame.sprite.Sprite):
         self.max_velocidade = max_velocidade
         self.dano = dano
         self.combo = 0
+        self.ultima_colisao = None
         sprite_manager.sprite_group.add(self)
 
     def bounce(self):
@@ -90,6 +91,9 @@ class Bola(pygame.sprite.Sprite):
             if abs(velocidade) >= self.max_velocidade:
                 self.velocidade[i] = int(self.max_velocidade * np.sign(velocidade))
 
+    def _resetar_ultima_colisao(self):
+        self.ultima_colisao = None
+
     def colidir_com_objeto(self, obj, intensidade=1, tipo=1):
         """Verifica e trata colisão com objetos"""
         if not pygame.sprite.collide_mask(self, obj):
@@ -117,6 +121,8 @@ class Bola(pygame.sprite.Sprite):
             audio_manager.tocar_sfx("sfx_hit_raquete")
             audio_manager.resetar_pitch_sfx("sfx_hit")
         elif tipo == 2:
+            if self.ultima_colisao == obj:
+                return False
             # Colisão com telha
             centro_bola = self.rect.centerx
             centro_telha = obj.rect.centerx
@@ -135,6 +141,7 @@ class Bola(pygame.sprite.Sprite):
                     else:
                         direcao = choice([1,-1])
                         self.velocidade[0] = direcao * (velocidade_minima)
+        self.ultima_colisao = obj
         return True
 
 
@@ -157,6 +164,7 @@ class BolaClone(pygame.sprite.Sprite):
         self.estado = 1  # Sempre em movimento
         self.max_velocidade = max_velocidade
         self.dano = dano
+        self.ultima_colisao = None
         sprite_manager.sprite_group.add(self)
 
     def update(self):
@@ -174,21 +182,27 @@ class BolaClone(pygame.sprite.Sprite):
             if abs(self.velocidade[i]) >= self.max_velocidade:
                 self.velocidade[i] = int(self.max_velocidade * np.sign(self.velocidade[i]))
 
+    def _resetar_ultima_colisao(self):
+        self.ultima_colisao = None
+
     def _verificar_colisoes_parede(self):
         """Verifica colisões com as paredes"""
         # Parede direita
         if self.rect.x >= SCREEN_WIDTH - self.width:
             self.velocidade[0] = abs(self.velocidade[0]) * -1
+            self._resetar_ultima_colisao()
             audio_manager.tocar_sfx("sfx_hit")
         
         # Parede esquerda
         if self.rect.x <= 0:
             self.velocidade[0] = abs(self.velocidade[0])
+            self._resetar_ultima_colisao()
             audio_manager.tocar_sfx("sfx_hit")
         
         # Teto
         if self.rect.y <= 0:
             self.velocidade[1] = -self.velocidade[1]
+            self._resetar_ultima_colisao()
             audio_manager.tocar_sfx("sfx_hit")
 
     def _verificar_morte(self):
@@ -222,6 +236,8 @@ class BolaClone(pygame.sprite.Sprite):
             audio_manager.tocar_sfx("sfx_hit_raquete")
         elif tipo == 2:
             # Colisão com telha
+            if self.ultima_colisao == obj:
+                return False
             centro_bola = self.rect.centerx
             centro_telha = obj.rect.centerx
 
@@ -239,6 +255,7 @@ class BolaClone(pygame.sprite.Sprite):
                     else:
                         direcao = choice([1,-1])
                         self.velocidade[0] = direcao * (velocidade_minima)
+        self.ultima_colisao = obj
         return True
 
 

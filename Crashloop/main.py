@@ -20,6 +20,7 @@ class Jogo:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Crashloop")
         self.clock = pygame.time.Clock()
+        self.fps = FPS
         
         # Gerenciadores
         self.ui = UIManager(self.screen)
@@ -77,9 +78,9 @@ class Jogo:
         """Atualiza a lógica do jogo"""
         self._mover_raquete(raquete)
         self._processar_colisoes_bola(bola)
-        bola.bounce()
         bola.colidir_com_objeto(raquete, 1, 1)
         self._verificar_colisao_telhas(bola)
+        bola.bounce()
         self._processar_clones(raquete)
         self._verificar_conclusao_nivel()
 
@@ -133,20 +134,24 @@ class Jogo:
         # Parede direita
         if bola.rect.x >= SCREEN_WIDTH - bola.width:
             bola.velocidade[0] = abs(bola.velocidade[0]) * -1
+            bola._resetar_ultima_colisao()
             audio_manager.tocar_sfx("sfx_hit")
         
         # Parede esquerda
         if bola.rect.x <= 0:
             bola.velocidade[0] = abs(bola.velocidade[0])
+            bola._resetar_ultima_colisao()
             audio_manager.tocar_sfx("sfx_hit")
         
         # Teto
         if bola.rect.y <= 0:
             bola.velocidade[1] = -bola.velocidade[1]
+            bola._resetar_ultima_colisao()
             audio_manager.tocar_sfx("sfx_hit")
         
         # Chão (perder bola)
         if bola.rect.y >= SCREEN_HEIGHT:
+            bola._resetar_ultima_colisao()
             self._perder_bola(bola)
 
     def _perder_bola(self, bola):
@@ -230,8 +235,8 @@ class Jogo:
         
         for telha in lista_colisao:
             if telha.alive():
-                bola.colidir_com_objeto(telha, 1, 2)
-                telha.tomar_dano(bola.dano)
+                if bola.colidir_com_objeto(telha, 1, 2):
+                    telha.tomar_dano(bola.dano)
 
     def _processar_clones(self, raquete):
         """Processa colisões e comportamento dos clones"""
@@ -254,8 +259,8 @@ class Jogo:
             
             for telha in lista_colisao:
                 if telha.alive():
-                    clone.colidir_com_objeto(telha, 1, 2)
-                    telha.tomar_dano(clone.dano)
+                    if clone.colidir_com_objeto(telha, 1, 2):
+                        telha.tomar_dano(clone.dano)
 
     def _verificar_conclusao_nivel(self):
         """Verifica se o nível foi concluído"""
